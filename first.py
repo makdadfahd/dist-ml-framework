@@ -1,0 +1,1 @@
+print("First try of the project")
