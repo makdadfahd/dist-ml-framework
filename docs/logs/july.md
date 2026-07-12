@@ -21,3 +21,13 @@ Today marks the official start of building my custom distributed machine learnin
 *   **Problem 3: Numerical Instability (Division by Zero)**
     *   *Issue:* Standard vector division exposed the framework to potential runtime crashes or infinite math loops (`inf` / `nan`) if a divisor array contained a zero.
     *   *Solution:* Introduced an out-of-place numerical stabilizer using epsilon ($\epsilon = 10^{-8}$). By adding this microscopic scalar to the denominator during the division step, the engine remains mathematically stable without mutating the original matrix values.
+
+### 📌 July 11, 2026 — Foundational Machine Learning & Linear Regression Math
+* **Milestone:** Began the *Supervised Machine Learning: Regression and Classification* course by Andrew Ng to build the theoretical foundation for the micro-framework.
+* **Core Concepts Covered:**
+  * **Supervised vs. Unsupervised Learning:** Differentiated between training models with explicit target outputs versus finding underlying patterns and relations in unlabeled data.
+  * **Regression vs. Classification:** Mapped the difference between continuous infinite outputs (regression) and discrete, specific categories (classification).
+  * **Linear Regression Mechanics:** Studied the single-variable linear model $f(x) = wx + b$.
+  * **Cost Function & Optimization:** Analyzed the Mean Squared Error cost function to calculate total error between predictions and actual targets.
+  * **Gradient Descent Algorithm:** Explored the mathematical optimization process used to update the parameters $w$ (weight) and $b$ (bias) iteratively using a learning rate ($\alpha$) until they converge at a local minimum of the cost function.
+* **Next Step:** Complete the remaining modules on gradient descent implementation and begin translating these mathematical formulas into raw NumPy code.
