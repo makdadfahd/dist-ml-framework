@@ -30,4 +30,3 @@ Today marks the official start of building my custom distributed machine learnin
   * **Linear Regression Mechanics:** Studied the single-variable linear model $f(x) = wx + b$.
   * **Cost Function & Optimization:** Analyzed the Mean Squared Error cost function to calculate total error between predictions and actual targets.
   * **Gradient Descent Algorithm:** Explored the mathematical optimization process used to update the parameters $w$ (weight) and $b$ (bias) iteratively using a learning rate ($\alpha$) until they converge at a local minimum of the cost function.
-* **Next Step:** Complete the remaining modules on gradient descent implementation and begin translating these mathematical formulas into raw NumPy code.
