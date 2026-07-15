@@ -36,7 +36,7 @@ Today marks the official start of building my custom distributed machine learnin
 * **The Breakthrough:** I implemented both a loop-based calculation and a vectorized calculation using a dot product. Comparing them side-by-side was eye-opening. The vectorized code is not only much shorter and cleaner to read, but it runs insanely faster because it processes the data in parallel instead of waiting for loops to finish.
 * **Next Step:** Apply these scaling techniques to a real dataset and practice writing clean, vectorized code using NumPy.
 
-## 2. Practical Project: Sales Prediction
+## Practical Project: Sales Prediction
 To apply these concepts, I built a model in the `/playground` folder, `ml_adver_pred.py` to predict product units sold based on advertising budgets for TV, Radio, and Newspaper.
 
 ### Problems & Solutions:
