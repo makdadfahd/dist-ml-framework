@@ -68,3 +68,7 @@ To apply these concepts, I built a model in the `/playground` folder to predict 
 *   **The Fix:** I applied **Z-score normalization** to the dataset. Once the features were scaled, the gradient descent stabilized and converged smoothly.
 *   **The Result:** The model successfully trained. The final weights showed that TV advertising had the highest weight, meaning it has the strongest impact on sales.
 
+### 📌 July 15, 2026 — Course Completion & Connecting the Dots
+* **What I did:** I officially finished the first course on Regression and Classification by Andrew Ng. In the final modules, I learned about logistic regression, the sigmoid function, and how to look at classification outputs. I also studied decision boundaries, how feature engineering helps the model fit data better, and how to deal with underfitting and overfitting using the cost function and gradient descent.
+* **The Breakthrough:** Finishing this course made a huge difference. I tried watching Andrej Karpathy's video (*The Spelled-out Intro to Neural Networks and Backpropagation*) before, but parts of it were confusing. Today, the first few minutes finally clicked in my mind because I actually understood the underlying math. 
+* **Next Step:** I am going to watch as much of Karpathy's video as I can today to see how this works in code. After that, I will finish the next two courses in Andrew Ng's specialization, and then come back to Karpathy's video to rewatch it until I completely master backpropagation.
