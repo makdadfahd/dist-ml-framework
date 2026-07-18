@@ -58,3 +58,12 @@ To apply these concepts, I built a model in the `/playground` folder, `ml_adver_
 * **What I did:** I was continuing Week 1 of the *Advanced Learning Algorithms* course by Andrew Ng, but I noticed he started using TensorFlow and showing PyTorch as the alternative. Since high-level frameworks like TensorFlow and PyTorch are completely banned in my project (because my goal is to build a mini-PyTorch entirely from scratch using only pure Python and NumPy), I decided to stop this course. 
 * **The New Strategy:** I shifted my strategy and moved over to Andrej Karpathy's *Zero to Hero* playlist on YouTube. His course is exactly what I need because it focuses on building everything from absolute first principles.
 * **Next Step:** Dive deep into Karpathy's first video to study how backpropagation works at a scalar level and start mapping out my own custom autograd engine.
+
+### 📌 July 18, 2026 — Coding Autograd from Scratch & Deep Dives
+* **What I did:** I restarted Andrej Karpathy's first video and began coding the autograd engine alongside him. I made a rule for myself not to type a single line of code until I understood it 100%. To truly visualize how the mathematical chains connect, I integrated the graph visualization code instead of blindly typing out the logic.
+* **Problems & Solutions:**
+  * **Problem 1:** I was confused why he used `_children` and `_op` with an underscore inside the `__init__` arguments.
+    * **Solution:** I researched it and found it's a standard Python developer convention. It tells other programmers that these variables are internal and meant for the backend, not for the end-user to interact with directly.
+  * **Problem 2:** I noticed he initialized the children argument as an empty tuple `()` and then converted it to a set, rather than just using `{}` directly.
+    * **Solution:** I realized that in Python, using `{}` defaults to creating an empty dictionary, not a set. Passing a tuple and casting it to a set is the correct way to handle it.
+* **Next Step:** Continue building out the forward pass of the expression graph and start preparing for the actual backpropagation implementation.
