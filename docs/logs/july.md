@@ -67,3 +67,15 @@ To apply these concepts, I built a model in the `/playground` folder, `ml_adver_
   * **Problem 2:** I noticed he initialized the children argument as an empty tuple `()` and then converted it to a set, rather than just using `{}` directly.
     * **Solution:** I realized that in Python, using `{}` defaults to creating an empty dictionary, not a set. Passing a tuple and casting it to a set is the correct way to handle it.
 * **Next Step:** Continue building out the forward pass of the expression graph and start preparing for the actual backpropagation implementation.
+
+### 📌 July 19 & 20, 2026 — Deep Dive into Closures, Scope, and Topological Sorting
+* **July 19:** Off day.
+* **July 20:** Continued Andrej Karpathy's first video on autograd. Sticking strictly to my rule of not writing a single line of code until I understand it 100%. This takes a lot of extra time because a 1-minute clip often leads to an hour of researching Python prerequisites, but it ensures I truly master the mechanics.
+* **Problems & Solutions:**
+  * **Problem 1:** I didn't understand why `lambda` was being used in some places.
+    * **Solution:** I researched Python anonymous functions and learned that `lambda` allows you to create quick, inline functions (or no-op placeholder functions) without a full `def` block.
+  * **Problem 2:** The assignment `out._backward = _backward` confused me. Why were there no parentheses, and why didn't the inner `_backward()` function take `self` as an argument when defined inside `__add__` or `__mul__`, yet called `out._backward()` with parentheses later?
+    * **Solution:** I did a deep dive into Python closures and scope. In Python, functions are first-class objects—assigning `out._backward = _backward` without parentheses stores the function reference itself to be executed later. Additionally, an inner function defined inside a method automatically inherits access to all variables in that method's scope (a closure), so it doesn't need `self` in its definition. However, when defining `backward(self)` at the class level outside those methods, `self` is explicitly required to access instance attributes.
+  * **Problem 3:** The recursive topological sort algorithm for ordering the execution graph was really mind-bending.
+    * **Solution:** I spent time tracing the recursion step-by-step. I realized recursion works like opening a window inside a window. You keep opening deeper windows until you can't go any further (the leaf nodes), complete the work in the deepest window, close it, step back to the previous window, and repeat that process until you return to the root.
+* **Next Step:** Finish building the automated backward pass for the complete expression graph and test it against a simple neural network layer.
