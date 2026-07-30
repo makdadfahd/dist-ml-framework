@@ -79,3 +79,12 @@ To apply these concepts, I built a model in the `/playground` folder, `ml_adver_
   * **Problem 3:** The recursive topological sort algorithm for ordering the execution graph was really mind-bending.
     * **Solution:** I spent time tracing the recursion step-by-step. I realized recursion works like opening a window inside a window. You keep opening deeper windows until you can't go any further (the leaf nodes), complete the work in the deepest window, close it, step back to the previous window, and repeat that process until you return to the root.
 * **Next Step:** Finish building the automated backward pass for the complete expression graph and test it against a simple neural network layer.
+
+### 📌 July 21–30, 2026 — Medical Break & Scaling from Scalars to NumPy Arrays
+* **July 21–29:** Off days. Spent time in the hospital receiving a diagnosis for Pachydermoperiostosis (PDP) and taking necessary time off to rest and recover mentally.
+* **July 30 (Today):** Back to work. While analyzing the project scope, I realized a key design gap: Andrej Karpathy’s *micrograd* engine only handles scalar values (single numbers), whereas a real autograd engine needs to operate on multi-dimensional tensors/NumPy arrays.
+* **The New Plan:**
+  1. Rewatch Karpathy's 1st video (*micrograd*) to make sure the scalar backpropagation mechanics are 100% clear.
+  2. Watch Karpathy's 2nd video to see how neural networks are structured in code.
+  3. Study MIT 6.S191 (Lecture 1) to understand how deep learning frameworks handle array operations, vectorization, and tensor backpropagation.
+* **Next Step:** Complete the video rewatches and start designing how my autograd engine will handle matrix multiplication and shape transformations during the backward pass.
