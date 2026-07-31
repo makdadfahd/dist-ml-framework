@@ -88,3 +88,13 @@ To apply these concepts, I built a model in the `/playground` folder, `ml_adver_
   2. Watch Karpathy's 2nd video to see how neural networks are structured in code.
   3. Study MIT 6.S191 (Lecture 1) to understand how deep learning frameworks handle array operations, vectorization, and tensor backpropagation.
 * **Next Step:** Complete the video rewatches and start designing how my autograd engine will handle matrix multiplication and shape transformations during the backward pass.
+
+### 📌 July 31, 2026 — Repository Cleanup & The $N$-Dimensional Roadmap
+* **What I did:** Today is the last day of July, so I decided to clear out all the temporary noise and scratchpad files from my GitHub repository to start fresh tomorrow. I organized the project layout by creating a `micrograd/` directory containing a clean `engine.py` file. 
+* **The Strategy for August:**
+  1. **Scalar Engine First:** Rebuild the scalar autograd engine in `engine.py` completely on my own without copying code, only referring back to Karpathy's first video if I get stuck.
+  2. **Matrix Mechanics:** Watch Lectures 3 and 4 of Stanford's Deep Learning course (CS231n) to learn how backpropagation works with multi-dimensional arrays and matrix gradients.
+  3. **Upgrade Path:** Upgrade my scalar engine to handle $N$-dimensional NumPy arrays.
+* **Problems & Solutions:**
+  * **Problem:** While watching Karpathy’s second video, I got thrown off by some advanced PyTorch syntax functions and wasn't sure if using equivalent built-in functions violates my "pure Python/NumPy" project constraints.
+  * **Solution:** I realized I don't need to worry about high-level syntax shortcuts right now. I feel very familiar with how scalar autograd works, so I am giving myself time to master the fundamentals first. Once the scalar logic is solid, extending it to higher dimensions will be a natural step forward.
