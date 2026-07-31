@@ -98,3 +98,6 @@ To apply these concepts, I built a model in the `/playground` folder, `ml_adver_
 * **Problems & Solutions:**
   * **Problem:** While watching Karpathy’s second video, I got thrown off by some advanced PyTorch syntax functions and wasn't sure if using equivalent built-in functions violates my "pure Python/NumPy" project constraints.
   * **Solution:** I realized I don't need to worry about high-level syntax shortcuts right now. I feel very familiar with how scalar autograd works, so I am giving myself time to master the fundamentals first. Once the scalar logic is solid, extending it to higher dimensions will be a natural step forward.
+  * **Troubleshooting:**
+  * **Problem:** After moving `engine.py` into the `micrograd/` directory, NumPy stopped working and Python threw an import error.
+  * **Solution:** Realized that changing directories broke the active virtual environment path. Deactivated, moved back to the project root directory, reactivated the `venv` via `source venv/bin/activate`, and ran the script from the root using `code . micrograd/engine.py`.
