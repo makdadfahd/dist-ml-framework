@@ -40,7 +40,7 @@ class Value :
         assert isinstance(other,(int,float)) , "only supporting int/float powers for now"
         out = Value(self.data**other, (self,))
 
-        def _backward(self) :
+        def _backward() :
             self.grad += other * self.data**(other - 1) * out.grad
         out._backward = _backward
 
