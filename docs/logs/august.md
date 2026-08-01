@@ -1,0 +1,6 @@
+### 📌 August 1, 2026 — Scalar Autograd Engine Completed & Pushed
+* **What I did:** Spent the entire morning rewatching Andrej Karpathy's first *Zero to Hero* video. Even though I have watched it several times before, every single rewatch reveals new details. After finishing the engine section of the video, I built out all the necessary remaining functions and officially pushed the completed scalar version of `engine.py` to GitHub!
+* **Deep Dives & Insights:**
+  * **Python `__rmul__` Mechanics:** I finally understood how reverse operations work. If you try to evaluate `2 * a`, Python first attempts `(2).__mul__(a)`. Since an integer doesn't know how to multiply a custom `Value` object, it fails and falls back to `a.__rmul__(2)`, which evaluates `a * 2` instead. I also saw how this applies to true division (`__truediv__`).
+  * **Using `assert` for Guards:** I realized why `assert` was used in the `__pow__` method instead of manual `if`/`else` blocks. `assert` acts as a quick guard clause—it guarantees that power operations are restricted to integer/float exponents right at the start, throwing an error immediately if the condition isn't met.
+* **Next Step:** Start studying Stanford CS231n (Lectures 3 & 4) to understand how gradients flow through multi-dimensional arrays, then prepare to upgrade the engine to handle NumPy arrays.
