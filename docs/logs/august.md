@@ -11,3 +11,10 @@
   * **Problem:** I kept running into module errors when trying to call methods on my custom class (like `engine.Value.tanh()` or trying to access internal data like `engine.Value.loss.data`).
   * **Solution:** I realized the issue was how I imported the module. I had written `from engine import Value`, which brought `Value` directly into the file's namespace, making the prefix `engine.` invalid. Changing the import approach or accessing attributes directly on instances of `Value` fixed the references.
 * **Next Step:** Implement a simple loss function and training loop to optimize the MLP's weights and biases via gradient descent.
+
+### 📌 August 3, 2026 — Mini Neural Network Optimization & Regularization Deep Dive
+* **What I did:** Built and ran a complete training loop for a mini neural network using my custom scalar autograd engine. I am also watching Lecture 3 of Stanford's CS231n to study loss functions and optimization.
+* **Achievements & Breakthroughs:**
+  * **Successful Training Loop:** My scalar engine successfully propagated gradients backward and updated the weights, dropping the total loss from **4.5 down to 0.00063**. Seeing the loss converge proved that my forward and backward autograd logic is working correctly.
+  * **Understanding Regularization:** I finally had a complete "aha!" moment regarding regularization (L1/L2 penalties). I had first encountered it two weeks ago in Andrew Ng's course, but watching CS231n made it click: regularization acts as a barrier or penalty against overly large weights, forcing the network to distribute its attention across features rather than memorizing noise (overfitting).
+* **Next Step:** Complete watching CS231n Lecture 3 and then move on to  Lecture 4 to study matrix calculus and backpropagation through vector/tensor operations, preparing to extend my engine to NumPy arrays.
