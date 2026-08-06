@@ -31,8 +31,28 @@ class Tensor :
         
         return out
 
+    def __matmul__(self, other):
+        #why cant we just do self = self if ... self is mandatory a Tensor because if it's not it will not even enter the class
+        other =  other if isinstance(other,Tensor) else Tensor(other)
+        if other.data.ndim == 1 :
+            shape = other.data.shape[0]
+            matrix = other.data.reshape(shape,1)
+        else : 
+            matrix = other.data
+
+        out = Tensor(self.data @ matrix, (self,other))
+
+        def _backward() :
+            pass 
+        out._backward = _backward
+        return out
+    
     def __rmul__(self, other):
         return self * other 
+
+    def __rmatmul__(self,other) :
+        other = other if isinstance(other,Tensor) else Tensor(other)
+        return other @ self #not self @ other because @ is not commutative
 
     def __pow__(self, other):
         assert isinstance(other,(int,float))
@@ -86,11 +106,20 @@ class Tensor :
 
     def __rtruediv__(self, other):
         return other * (self**(-1))
+    
 
 
 x = Tensor([2,-1,2])
-y = Tensor([4,2,1])
 
-z = x.relu()
+w = [[0,3,1],
+    [2,0,1],
+    [0,0,1]]
 
-print(z,z._prev)
+
+out = w @ x
+
+# out = w.__matmul__(x)
+
+# x.__rmatmul__(w)
+
+print(out)
