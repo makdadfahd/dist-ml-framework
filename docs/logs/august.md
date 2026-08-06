@@ -26,3 +26,18 @@
   * **Replacing `tanh` with `ReLU`:** I removed the `tanh` activation function and replaced it with `ReLU`. Computing $e^x$ in `tanh` requires expensive floating-point operations on the CPU/GPU, whereas `ReLU` is just a simple thresholding operation ($\max(0, x)$). Additionally, research (e.g., AlexNet) shows `ReLU` allows neural networks to converge up to 6 times faster than `tanh` while avoiding vanishing gradients.
   * **Tensor Broadcast Verification:** Successfully tested tensor-with-tensor and tensor-with-scalar additions and multiplications to ensure basic NumPy broadcasting rules behave as expected.
 * **Next Step:** Implement shape tracking, matrix multiplication (`__matmul__`), and axis reduction during the backward pass to handle matrix gradient propagation cleanly.
+
+### 📌 August 7, 2026 — Matrix Multiplication (`__matmul__`, `__rmatmul__`) & Dimension Handling
+* **What I did:** Added matrix multiplication (`__matmul__` and `__rmatmul__`) to the tensor engine. 
+* **Problems & Solutions:**
+  * **1D Array Reshaping in `__matmul__`:** 
+    * **Problem:** Multiplying 1D NumPy vectors caused shape mismatch errors during matrix operations.
+    * **Solution:** Ensured 1D arrays are reshaped into 2D matrices so matrix multiplication dimensions stay clean and predictable.
+  * **Handling Non-Commutativity in `__rmatmul__`:**
+    * **Problem:** When trying to evaluate `array @ tensor`, I initially returned `self @ other` inside `__rmatmul__` and got shape errors.
+    * **Solution:** Matrix multiplication is non-commutative A @ B != B @ A. Because `array @ tensor` triggers `tensor.__rmatmul__(array)`, the correct operand order is `other @ self`.
+  * **Implicit Type Coercion:**
+    * **Problem:** I wondered why `self = Tensor(self)` wasn't working inside `__matmul__` when `self` wasn't a `Tensor`.
+    * **Solution:** I realized that if `self` isn't a `Tensor`, execution never hits `__matmul__` in the first place—Python routes straight to `tensor.__rmatmul__(array)`. Wrapping `other` via `other = other if isinstance(other, Tensor) else Tensor(other)` and returning `other @ self` solved it cleanly.
+* **Takeaway on Backprop:** Stanford CS231n Lecture 4 stayed high-level and didn't detail multi-dimensional gradient mechanics, so I am leaving `_backward()` methods empty for now until I fully map out the matrix calculus rules.
+* **Next Step:** Study matrix calculus shape rules (transposes, shape matching, and sum reductions across batch/broadcast axes) to implement `_backward()` for `__matmul__`, `__add__`, and `__mul__`.
