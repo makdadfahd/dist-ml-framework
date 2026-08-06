@@ -18,3 +18,11 @@
   * **Successful Training Loop:** My scalar engine successfully propagated gradients backward and updated the weights, dropping the total loss from **4.5 down to 0.00063**. Seeing the loss converge proved that my forward and backward autograd logic is working correctly.
   * **Understanding Regularization:** I finally had a complete "aha!" moment regarding regularization (L1/L2 penalties). I had first encountered it two weeks ago in Andrew Ng's course, but watching CS231n made it click: regularization acts as a barrier or penalty against overly large weights, forcing the network to distribute its attention across features rather than memorizing noise (overfitting).
 * **Next Step:** Complete watching CS231n Lecture 3 and then move on to  Lecture 4 to study matrix calculus and backpropagation through vector/tensor operations, preparing to extend my engine to NumPy arrays.
+
+### 📌 August 4–6, 2026 — $N$-Dimensional Tensor Upgrade & ReLU Migration
+* **August 4–5:** Off days.
+* **August 6 (Today):** Started upgrading my scalar engine to handle multi-dimensional tensors/NumPy arrays. I began with fundamental operations: `__repr__`, `__add__`, and `__mul__`.
+* **Deep Dives & Performance Optimization:**
+  * **Replacing `tanh` with `ReLU`:** I removed the `tanh` activation function and replaced it with `ReLU`. Computing $e^x$ in `tanh` requires expensive floating-point operations on the CPU/GPU, whereas `ReLU` is just a simple thresholding operation ($\max(0, x)$). Additionally, research (e.g., AlexNet) shows `ReLU` allows neural networks to converge up to 6 times faster than `tanh` while avoiding vanishing gradients.
+  * **Tensor Broadcast Verification:** Successfully tested tensor-with-tensor and tensor-with-scalar additions and multiplications to ensure basic NumPy broadcasting rules behave as expected.
+* **Next Step:** Implement shape tracking, matrix multiplication (`__matmul__`), and axis reduction during the backward pass to handle matrix gradient propagation cleanly.
