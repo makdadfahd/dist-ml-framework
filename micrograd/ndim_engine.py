@@ -5,7 +5,7 @@ class Tensor :
     def __init__(self, data, _children=()):
         self.data = np.array(data)
         self._prev = set(_children)
-        self.grad = 0.0
+        self.grad = np.zeros(self.data.shape)
         self._backward = lambda : None 
 
     def __repr__(self):
@@ -111,15 +111,9 @@ class Tensor :
 
 x = Tensor([2,-1,2])
 
-w = [[0,3,1],
+w = Tensor([[0,3,1],
     [2,0,1],
-    [0,0,1]]
+    [0,0,1]])
 
 
-out = w @ x
-
-# out = w.__matmul__(x)
-
-# x.__rmatmul__(w)
-
-print(out)
+print(w.grad)
