@@ -3,7 +3,7 @@ import math as m
 
 class Tensor : 
     def __init__(self, data, _children=()):
-        self.data = np.array(data)
+        self.data = np.array(data, dtype=float)
         self._prev = set(_children)
         self.grad = np.zeros(self.data.shape)
         self._backward = lambda : None 
@@ -32,18 +32,28 @@ class Tensor :
         return out
 
     def __matmul__(self, other):
-        #why cant we just do self = self if ... self is mandatory a Tensor because if it's not it will not even enter the class
         other =  other if isinstance(other,Tensor) else Tensor(other)
-        if other.data.ndim == 1 :
-            shape = other.data.shape[0]
-            matrix = other.data.reshape(shape,1)
-        else : 
-            matrix = other.data
 
-        out = Tensor(self.data @ matrix, (self,other))
+        self_is_1d = self.data.ndim == 1
+        other_is_1d = other.data.ndim == 1
 
+        self_matrix = self.data.reshape(1,-1) if self_is_1d else self.data
+        other_matrix = other.data.reshape(-1,1) if other_is_1d else other.data
+
+        out = self_matrix @ other_matrix
+
+        if self_is_1d and other_is_1d :
+            out = out.squeeze()
+        elif self_is_1d :
+            out = out.squeeze(axis = 0)
+        elif other_is_1d :
+            out = out.squeeze(axis = -1 )
+
+        out = Tensor(out,(self,other))
+        
         def _backward() :
-            pass 
+            other.grad = self_matrix.T @ out.grad
+            self.grad = out.grad @ other_matrix.T
         out._backward = _backward
         return out
     
@@ -109,11 +119,18 @@ class Tensor :
     
 
 
-x = Tensor([2,-1,2])
+x = Tensor([2,-1,2]
+            )
 
 w = Tensor([[0,3,1],
-    [2,0,1],
-    [0,0,1]])
+            [2,0,1],
+            [0,0,1]])
 
 
-print(w.grad)
+
+out = x @ w
+
+
+out.grad = np.ones(out.data.shape)
+
+print(out.grad)
