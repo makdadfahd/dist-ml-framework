@@ -16,8 +16,7 @@ class Tensor :
         out = Tensor(self.data + other.data, (self,other))
 
         def _backward() : 
-            self.grad += out.grad
-            other.grad += out.grad
+            pass
         out._backward = _backward
 
         return out
@@ -88,9 +87,9 @@ class Tensor :
         return out
 
     def relu(self) : 
-        out = Tensor([ max(0,xi) for xi in self.data ],(self,)) 
+        out = Tensor( np.maximum(0,self.data) ,(self,)) 
         def _backward() : 
-            pass
+            self.grad += out.grad * (self.data > 0)
         out._backward = _backward
 
         return out
@@ -139,12 +138,25 @@ w = Tensor([[0,3,1],
             [2,0,1],
             [0,0,1]])
 
-b = Tensor([1,1,1])
+z = w @ x 
 
-out = b + b
+f = z.relu()
 
-out.grad = np.ones(out.data.shape)
-print(out.grad)
-out._backward()
+c = Tensor([[1,8,0],
+           [5,9,1],
+           [7,1,1]])
 
-print(b.grad)
+k = f @ c
+
+l = k.relu()
+
+l.grad = np.ones(l.data.shape)
+
+
+
+l._backward()
+k._backward()
+f._backward()
+z._backward()
+
+print(w.grad)
