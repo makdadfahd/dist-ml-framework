@@ -16,7 +16,8 @@ class Tensor :
         out = Tensor(self.data + other.data, (self,other))
 
         def _backward() : 
-            pass
+            self.grad += out.grad
+            other.grad += out.grad
         out._backward = _backward
 
         return out
@@ -52,8 +53,20 @@ class Tensor :
         out = Tensor(out,(self,other))
         
         def _backward() :
-            other.grad = self_matrix.T @ out.grad
-            self.grad = out.grad @ other_matrix.T
+            out_grad_matrix = out.grad
+            if self_is_1d and other_is_1d :
+                out_grad_matrix = out_grad_matrix.reshape(1,1)
+            elif self_is_1d :
+                out_grad_matrix = out_grad_matrix.reshape(1,-1)
+            elif other_is_1d :
+                out_grad_matrix = out_grad_matrix.reshape(-1 , 1)
+
+            self_grad_matrix = out_grad_matrix @ other_matrix.T
+            other_grad_matrix = self_matrix.T @ out_grad_matrix
+
+            self.grad += self_grad_matrix.reshape(self.data.shape)
+            other.grad += other_grad_matrix.reshape(other.data.shape)
+
         out._backward = _backward
         return out
     
@@ -119,18 +132,19 @@ class Tensor :
     
 
 
-x = Tensor([2,-1,2]
-            )
+x = Tensor([2,-1,2])
+            
 
 w = Tensor([[0,3,1],
             [2,0,1],
             [0,0,1]])
 
+b = Tensor([1,1,1])
 
-
-out = x @ w
-
+out = b + b
 
 out.grad = np.ones(out.data.shape)
-
 print(out.grad)
+out._backward()
+
+print(b.grad)
