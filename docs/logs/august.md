@@ -41,3 +41,28 @@
     * **Solution:** I realized that if `self` isn't a `Tensor`, execution never hits `__matmul__` in the first place—Python routes straight to `tensor.__rmatmul__(array)`. Wrapping `other` via `other = other if isinstance(other, Tensor) else Tensor(other)` and returning `other @ self` solved it cleanly.
 * **Takeaway on Backprop:** Stanford CS231n Lecture 4 stayed high-level and didn't detail multi-dimensional gradient mechanics, so I am leaving `_backward()` methods empty for now until I fully map out the matrix calculus rules.
 * **Next Step:** Study matrix calculus shape rules (transposes, shape matching, and sum reductions across batch/broadcast axes) to implement `_backward()` for `__matmul__`, `__add__`, and `__mul__`.
+
+### 📌 August 8, 2026 — Matrix Calculus Derivation & 1D Vector Dimension Handling
+* **What I did:** Found a detailed video tutorial deriving the matrix calculus rules for matrix multiplication backpropagation, enabling me to begin writing `_backward()` for the `__matmul__` method.
+* **Problems & Solutions:**
+  * **1D Vector Reshaping during Forward Pass:**
+    * **Problem:** In mathematical notation, intuition naturally treats 1D vectors as row or column matrices during multiplication, but NumPy throws strict rank/dimension mismatch errors.
+    * **Solution:** Added explicit reshaping based on operand positioning before executing the matrix multiplication:
+      * Left operand (`self`): Reshaped to 2D row vector `(1, -1)`.
+      * Right operand (`other`): Reshaped to 2D column vector `(-1, 1)`.
+  * **Output Dimension Alignment & Rank Squeezing:**
+    * **Problem:** Applying rigid 2D matrix multiplication rules consistently forces the output into a 2D matrix, even when multiplying 1D vectors.
+    * **Solution:** Implemented dynamic dimension squeezing on the resulting matrix shape:
+      * **Both operands are 1D:** Squeeze all dimensions (`squeeze()`) to return a scalar.
+      * **Left operand (`self`) is 1D:** Squeeze the first dimension (`squeeze(0)`).
+      * **Right operand (`other`) is 1D:** Squeeze the last dimension (`squeeze(-1)`).
+* **Next Step:** Apply these derived matrix rules to complete the backward pass logic ($\frac{\partial L}{\partial A} = \text{grad} \cdot B^T$ and $\frac{\partial L}{\partial B} = A^T \cdot \text{grad}$) while maintaining shape alignment across transposes.
+
+### 📌 August 9–11, 2026 — Matrix Autograd `_backward()` & Gradient Dimension Alignments
+* **August 9–10:** Off days.
+* **August 11 (Today):** Implemented the `_backward()` pass for matrix multiplication (`__matmul__`) and added the initial backward logic for addition (`__add__`).
+* **Problems & Solutions:**
+  * **Raw Gradient Operations in `_backward()`:**
+    * **Problem:** I initially wrote `self.grad = out.grad @ w.data.T`, but because `out.grad` and `w.data.T` are raw internal data structures rather than custom `Tensor` objects, the 1D/2D dimension rules I wrote inside `__matmul__` didn't execute, causing shape mismatches.
+    * **Solution:** Re-implemented matrix dimension handling directly inside the `_backward()` function. I wrapped all participating gradient arrays into explicit 2D matrices for the transpose matrix multiplication, calculated the resulting gradients, and then reshaped/squeezed the resulting arrays back so that `self.grad` and `other.grad` strictly match the original shapes of `self.data` and `other.data`.
+* **Next Step:** Fine-tune `__add__` backward to handle NumPy broadcasting reduction (summing gradients along broadcast axes) and test the full backward pass end-to-end.
