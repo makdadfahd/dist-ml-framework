@@ -1,6 +1,21 @@
 import numpy as np
 import math as m
 
+
+def unbroadcast(out_grad,target_shape) :
+        difference = len(out_grad.shape) - len(target_shape)
+
+        new_shape = (1,) * difference + target_shape
+        
+
+        for i , (m,n) in enumerate(zip(out_grad.shape, new_shape)) :
+            if m > 1 and n == 1 :
+                out_grad = out_grad.sum(axis = i , keepdims = True )
+
+        new_grad = out_grad.reshape(target_shape)
+
+        return new_grad
+
 class Tensor : 
     def __init__(self, data, _children=()):
         self.data = np.array(data, dtype=float)
@@ -11,12 +26,17 @@ class Tensor :
     def __repr__(self):
         return f'Tensor(Data : {self.data})'
 
+    
+    
+
     def __add__(self, other) :
         other = other if isinstance(other,Tensor) else Tensor(other)
         out = Tensor(self.data + other.data, (self,other))
 
         def _backward() : 
-            pass
+            self.grad += unbroadcast(out.grad,self.data.shape)
+            other.grad += unbroadcast(out.grad,other.data.shape)
+
         out._backward = _backward
 
         return out
@@ -26,7 +46,8 @@ class Tensor :
         out = Tensor(self.data * other.data, (self,other)) 
 
         def _backward() : 
-            pass
+            self.grad += unbroadcast(out.grad*other.data,self.data.shape)
+            other.grad += unbroadcast(out.grad * self.data,other.data.shape)
         out._backward = _backward
         
         return out
@@ -81,7 +102,7 @@ class Tensor :
         out = Tensor(self.data**other, (self,))
 
         def _backward() :
-            pass
+            self.grad += out.grad * (other * self.data**(other - 1))
         out._backward = _backward
 
         return out
@@ -106,7 +127,7 @@ class Tensor :
                     topo_sort(child)
                 topo.append(node)
         topo_sort(self)
-        self.grad = 1.0
+        self.grad = np.ones(self.data.shape)
 
         for node in reversed(topo) :
             node._backward()
@@ -118,7 +139,8 @@ class Tensor :
         return self + (- other )
 
     def __rsub__(self, other):
-        return self + (-other)
+        other = other if isinstance(other,Tensor) else Tensor(other)
+        return other + (-self)
     
     def __radd__(self, other):
         return self + other
@@ -138,25 +160,21 @@ w = Tensor([[0,3,1],
             [2,0,1],
             [0,0,1]])
 
-z = w @ x 
+b = Tensor([1,1,0])
 
-f = z.relu()
+h1 = x @ w + b
 
-c = Tensor([[1,8,0],
-           [5,9,1],
-           [7,1,1]])
+a1 = h1.relu()
 
-k = f @ c
+h2 = a1 * 2 
 
-l = k.relu()
+a2 = h2.relu()
 
-l.grad = np.ones(l.data.shape)
+h3 = a2 + b
 
+a3 = h3.relu()
 
+a3.backward()
 
-l._backward()
-k._backward()
-f._backward()
-z._backward()
+print(b.grad)
 
-print(w.grad)
