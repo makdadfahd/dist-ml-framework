@@ -66,3 +66,22 @@
     * **Problem:** I initially wrote `self.grad = out.grad @ w.data.T`, but because `out.grad` and `w.data.T` are raw internal data structures rather than custom `Tensor` objects, the 1D/2D dimension rules I wrote inside `__matmul__` didn't execute, causing shape mismatches.
     * **Solution:** Re-implemented matrix dimension handling directly inside the `_backward()` function. I wrapped all participating gradient arrays into explicit 2D matrices for the transpose matrix multiplication, calculated the resulting gradients, and then reshaped/squeezed the resulting arrays back so that `self.grad` and `other.grad` strictly match the original shapes of `self.data` and `other.data`.
 * **Next Step:** Fine-tune `__add__` backward to handle NumPy broadcasting reduction (summing gradients along broadcast axes) and test the full backward pass end-to-end.
+
+### 📌 August 12, 2026 — The N-Dimensional Tensor Engine is Finally Complete!
+
+Yesterday and today were definitely tough. Figuring out the backward pass for `__add__` and `__mul__` ended up being way harder than `__matmul__`. Matrix multiplication was mostly straightforward matrix calculus, but addition and multiplication—which were almost trivial in the scalar engine—turned out to be a whole different monster in multi-dimensional space because of NumPy broadcasting.
+
+* **The Broadcasting Backprop Wall:**
+  * **The Issue:** When you add a tensor of shape `(3,)` to a tensor of shape `(100, 3)`, NumPy automatically broadcasts the smaller one to match `(100, 3)`. The output gradient comes back as `(100, 3)`. Trying to pass that gradient straight back to the `(3,)` leaf node immediately crashes with a shape mismatch.
+  * **The Breakthrough:** To undo broadcasting during backprop, you have to sum up the gradients along every axis that got expanded during the forward pass. Saying it in plain English is easy, but turning that logic into bug-free Python code took some serious head-scratching.
+
+* **How I Solved It (`unbroadcast` helper):**
+  * Built a dedicated `unbroadcast` function that takes `out.grad` and the targeted target shape (`self.data.shape` or `other.data.shape`).
+  * Calculated the rank difference and prepended `1`s to the left of the target shape until both shapes had the same number of dimensions.
+  * Loop through paired axes `(m, n)` using `enumerate` and `zip`. Whenever `m > 1` and `n == 1`, it means that axis was stretched in the forward pass. I summed across `axis=i` keeping `keepdims=True` so we don't drop rank prematurely.
+  * Finally, reshaped the array back to the original input shape. Applied this exact same reduction logic to `__mul__`.
+
+* **Final Engine Tweaks & Benchmark:**
+  * **Topological Seed:** Changed the root gradient initialization from Karpathy’s scalar `self.grad = 1` to `self.grad = np.ones(self.data.shape)`.
+  * **Power Rule:** Implemented `_backward()` for `__pow__` using the standard calculus power rule applied across array elements.
+  * **Sanity Check:** Built a test script with multi-dimensional array inputs, ran a heavy chain of operations, and hit `.backward()`. Every single gradient from the root down to the leaf nodes calculated cleanly on the first shot!
