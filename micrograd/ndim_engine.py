@@ -1,13 +1,10 @@
 import numpy as np
 import math as m
 
-
 def unbroadcast(out_grad,target_shape) :
         difference = len(out_grad.shape) - len(target_shape)
-
         new_shape = (1,) * difference + target_shape
         
-
         for i , (m,n) in enumerate(zip(out_grad.shape, new_shape)) :
             if m > 1 and n == 1 :
                 out_grad = out_grad.sum(axis = i , keepdims = True )
@@ -26,9 +23,6 @@ class Tensor :
     def __repr__(self):
         return f'Tensor(Data : {self.data})'
 
-    
-    
-
     def __add__(self, other) :
         other = other if isinstance(other,Tensor) else Tensor(other)
         out = Tensor(self.data + other.data, (self,other))
@@ -38,7 +32,6 @@ class Tensor :
             other.grad += unbroadcast(out.grad,other.data.shape)
 
         out._backward = _backward
-
         return out
 
     def __mul__(self,other) :
@@ -48,8 +41,8 @@ class Tensor :
         def _backward() : 
             self.grad += unbroadcast(out.grad*other.data,self.data.shape)
             other.grad += unbroadcast(out.grad * self.data,other.data.shape)
+
         out._backward = _backward
-        
         return out
 
     def __matmul__(self, other):
@@ -89,13 +82,6 @@ class Tensor :
 
         out._backward = _backward
         return out
-    
-    def __rmul__(self, other):
-        return self * other 
-
-    def __rmatmul__(self,other) :
-        other = other if isinstance(other,Tensor) else Tensor(other)
-        return other @ self #not self @ other because @ is not commutative
 
     def __pow__(self, other):
         assert isinstance(other,(int,float))
@@ -115,9 +101,7 @@ class Tensor :
 
         return out
 
-
     def backward(self) :
-
         topo = []
         visited = set()
         def topo_sort(node) :
@@ -131,6 +115,13 @@ class Tensor :
 
         for node in reversed(topo) :
             node._backward()
+
+    def __rmatmul__(self,other) :
+        other = other if isinstance(other,Tensor) else Tensor(other)
+        return other @ self #not self @ other because @ is not commutative
+
+    def __rmul__(self, other):
+        return self * other 
 
     def __neg__(self) :
         return self * (-1)
@@ -151,30 +142,4 @@ class Tensor :
     def __rtruediv__(self, other):
         return other * (self**(-1))
     
-
-
-x = Tensor([2,-1,2])
-            
-
-w = Tensor([[0,3,1],
-            [2,0,1],
-            [0,0,1]])
-
-b = Tensor([1,1,0])
-
-h1 = x @ w + b
-
-a1 = h1.relu()
-
-h2 = a1 * 2 
-
-a2 = h2.relu()
-
-h3 = a2 + b
-
-a3 = h3.relu()
-
-a3.backward()
-
-print(b.grad)
 
