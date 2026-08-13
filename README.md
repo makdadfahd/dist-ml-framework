@@ -8,15 +8,3 @@ The goal of this project is to build a lightweight machine learning micro-framew
 * **Language:** Python 
 * **Core Math:** NumPy
 * **Core Concept:** Low-level matrix calculus & distributed workloads
-
-### Repository Structure :
-```text
-dist-ml-framework/
-│
-├── Tensor.py
-├── README.md          
-└── docs/              
-    └── logs/          
-        ├── July.md    
-        └── August.md  
-```
