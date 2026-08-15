@@ -85,3 +85,16 @@ Yesterday and today were definitely tough. Figuring out the backward pass for `_
   * **Topological Seed:** Changed the root gradient initialization from Karpathy’s scalar `self.grad = 1` to `self.grad = np.ones(self.data.shape)`.
   * **Power Rule:** Implemented `_backward()` for `__pow__` using the standard calculus power rule applied across array elements.
   * **Sanity Check:** Built a test script with multi-dimensional array inputs, ran a heavy chain of operations, and hit `.backward()`. Every single gradient from the root down to the leaf nodes calculated cleanly on the first shot!
+
+### 📌 August 14–15, 2026 — Added sum() method to the engine !
+
+* **August 14:** Off day.
+* **August 15 (Today):** Added a custom `.sum()` method to the tensor autograd engine to maintain computation graph tracking when reducing multi-dimensional tensors to scalar losses.
+
+* **Problems & Solutions:**
+  * **The Graph-Breaking `np.sum` Issue:**
+    * **Problem:** When computing batch losses (like summing or averaging individual loss terms into a single scalar value), using raw `np.sum(tensor.data)` breaks the computation graph. Because standard NumPy operations don't register child nodes or store backward closures, backpropagation halts at the loss computation and gradients cannot flow back into the network weights.
+    * **Solution:** Built a custom `.sum()` method on the `Tensor` class:
+      1. Created an output `Tensor` containing `np.sum(self.data)` with `_children = (self,)`.
+      2. Set `keepdims=True` internally during reduction so `out.grad` maintains dimensional rank (e.g., shape `(1,)` or `(1, 1)` instead of a bare scalar).
+      3. Implemented `_backward()` using NumPy's `np.broadcast_to(out.grad, self.data.shape)`. Since the gradient of a summation distributes equally ($1.0$) to all summed input elements, broadcasting `out.grad` back across `self.data.shape` passes the parent gradient to every constituent element in the tensor.
