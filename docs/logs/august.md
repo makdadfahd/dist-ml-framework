@@ -98,3 +98,20 @@ Yesterday and today were definitely tough. Figuring out the backward pass for `_
       1. Created an output `Tensor` containing `np.sum(self.data)` with `_children = (self,)`.
       2. Set `keepdims=True` internally during reduction so `out.grad` maintains dimensional rank (e.g., shape `(1,)` or `(1, 1)` instead of a bare scalar).
       3. Implemented `_backward()` using NumPy's `np.broadcast_to(out.grad, self.data.shape)`. Since the gradient of a summation distributes equally ($1.0$) to all summed input elements, broadcasting `out.grad` back across `self.data.shape` passes the parent gradient to every constituent element in the tensor.
+
+### 📌 August 15, 2026 — Tracked Primitives (`exp`, `log`, `.T`) & Loss Function Graph Mechanics
+
+* **What I did:** Added custom `exp()`, `log()`, and `.T` (transpose) methods to the `Tensor` engine.
+
+* **Why I added them:**
+  * Realized that building high-level operations like Softmax and Cross-Entropy Loss requires exponentiation, logarithms, and matrix transposes.
+  * Using raw NumPy functions (`np.exp`, `np.log`) would sever the computational graph and freeze gradient tracking. Wrapping them in `Tensor` methods keeps every step on track.
+
+* **Implementation & Calculus:**
+  * **`exp()`:** $\frac{d}{dx}(e^x) = e^x$. The backward pass simply multiplies `out.grad * out.data`.
+  * **`log()`:** $\frac{d}{dx}(\ln(x)) = \frac{1}{x}$. The backward pass evaluates `out.grad * (1.0 / self.data)`.
+  * **`.T` (Transpose):** Transposing an array during forward propagation means we simply re-transpose the output gradient during backpropagation (`out.grad.T`) to restore alignment with `self.shape`.
+
+* **Deep Dive / Question on Fused Cross-Entropy:**
+  * *Question:* Do I need to manually code a `_backward()` function for Softmax or Cross-Entropy?
+  * *Insight:* No! Since Softmax and Cross-Entropy are built directly from my tracked primitives (`exp`, `log`, division, sum), the autograd engine handles the chain rule automatically. While production frameworks fuse these into a single custom backward pass for speed and numerical stability (avoiding `log(0)` or `exp` overflow), building them out of my underlying primitives proves my autograd engine's core graph mechanics actually work!
