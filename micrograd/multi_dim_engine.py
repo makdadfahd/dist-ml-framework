@@ -101,6 +101,13 @@ class Tensor :
 
         return out
 
+    def sum(self) :
+        out = Tensor(np.sum(self.data, keepdims=True),(self,))
+        def _backward() :
+            self.grad += np.broadcast_to(out.grad, self.data.shape)
+        out._backward = _backward
+        return out
+
     def backward(self) :
         topo = []
         visited = set()
@@ -141,5 +148,3 @@ class Tensor :
 
     def __rtruediv__(self, other):
         return other * (self**(-1))
-    
-
