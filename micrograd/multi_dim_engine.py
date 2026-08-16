@@ -2,16 +2,16 @@ import numpy as np
 import math as m
 
 def unbroadcast(out_grad,target_shape) :
-        difference = len(out_grad.shape) - len(target_shape)
-        new_shape = (1,) * difference + target_shape
+    difference = len(out_grad.shape) - len(target_shape)
+    new_shape = (1,) * difference + target_shape
         
-        for i , (m,n) in enumerate(zip(out_grad.shape, new_shape)) :
-            if m > 1 and n == 1 :
-                out_grad = out_grad.sum(axis = i , keepdims = True )
+    for i , (m,n) in enumerate(zip(out_grad.shape, new_shape)) :
+        if m > 1 and n == 1 :
+            out_grad = out_grad.sum(axis = i , keepdims = True )
 
-        new_grad = out_grad.reshape(target_shape)
+    new_grad = out_grad.reshape(target_shape)
 
-        return new_grad
+    return new_grad
 
 class Tensor : 
     def __init__(self, data, _children=()):
@@ -101,8 +101,12 @@ class Tensor :
 
         return out
 
-    def sum(self) :
-        out = Tensor(np.sum(self.data, keepdims=True),(self,))
+    def sum(self, axe = None) :
+        if axe is None : 
+            out = Tensor(np.sum(self.data, keepdims=True),(self,))
+        else :
+            out = Tensor(np.sum(self.data, axis=axe ,  keepdims=True),(self,))
+
         def _backward() :
             self.grad += np.broadcast_to(out.grad, self.data.shape)
         out._backward = _backward
@@ -123,7 +127,7 @@ class Tensor :
         return out
 
     def log(self) :
-        out = Tensor(np.log(self.data), (self))
+        out = Tensor(np.log(self.data), (self,))
         def _backward() :
             self.grad += out.grad * (1/self.data)
         out._backward = _backward
