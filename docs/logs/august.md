@@ -115,3 +115,22 @@ Yesterday and today were definitely tough. Figuring out the backward pass for `_
 * **Deep Dive / Question on Fused Cross-Entropy:**
   * *Question:* Do I need to manually code a `_backward()` function for Softmax or Cross-Entropy?
   * *Insight:* No! Since Softmax and Cross-Entropy are built directly from my tracked primitives (`exp`, `log`, division, sum), the autograd engine handles the chain rule automatically. While production frameworks fuse these into a single custom backward pass for speed and numerical stability (avoiding `log(0)` or `exp` overflow), building them out of my underlying primitives proves my autograd engine's core graph mechanics actually work!
+
+  ### 📌 August 17, 2026 — Fused Cross-Entropy Backprop, Bug Fixes, & Adam Optimizer Integration
+
+Today was a massive breakthrough day, and honestly I am so happy with how everything turned out. The engine, the neural network, and the optimizer are all working together seamlessly!
+
+* **Why I Switched to a Custom Fused Cross-Entropy Backward Pass:**
+  * **The Problem:** I initially tried relying on my tracked primitives (`exp`, `log`, `sum`, `truediv`) to compute loss backprop automatically, but testing gave me all zeros. Large data values caused numeric explosions in `exp()`, while tiny values crashed `log()`. 
+  * **The Solution:** I ditched the primitive sub-graph approach for loss calculation and built a single, custom `_backward()` function directly inside my cross-entropy loss method. I studied the math for Softmax derivatives—handling the two cases where $i = j$ vs $i \neq j$. When combined with cross-entropy, the math cleans up miraculously into a simple gradient equation: `scores.grad = (A - Y) / N`, where `A` is the Softmax probability matrix, `Y` is the one-hot target matrix, and `N` is the batch size. 
+
+* **Debugging the Broken Graph Bridge:**
+  * **The Issue:** After setting `scores.grad` manually inside the cross-entropy backward closure, the model parameters further up the network still received zero gradients.
+  * **The Fix:** I realized I had forgotten to pass `scores` into `_children` when instantiating the `full_loss` tensor! Because `scores` wasn't registered as a child, the topological sort broke right at the loss node, severing the backpropagation bridge. Adding `_children=(scores,)` fixed the flow instantly.
+
+* **Adam Optimizer & The 400-Iteration Milestone:**
+  * **Reproducibility:** Added `np.random.seed(42)` so network weight initializations stay stable across runs.
+  * **Adam Implementation:** Created a dedicated `optimizer.py` file to keep the codebase clean and modular. I implemented the Adam optimizer based on what I learned from the Stanford CS231n lectures.
+  * **Training Run:** Imported Adam into my neural network script and ran a 400-iteration training test, printing loss every 50 steps. The loss plummeted from **2.4 down to ~0.0001**! Seeing the loss converge so smoothly proved that every layer of the architecture is solid.
+
+**Next Step:** Learn how to download and parse the raw MNIST dataset, then train my neural network on real-world handwritten digits using my custom engine and Adam optimizer!
