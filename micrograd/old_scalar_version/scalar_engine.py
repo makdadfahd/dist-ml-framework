@@ -1,3 +1,7 @@
+# This file is based on Andrej Karpathy's micrograd (MIT License).
+# Original Copyright (c) 2020 Andrej Karpathy
+# Modifications for N-dimensional support Copyright (c) 2026 [Fahd Makdad]   
+
 import numpy as np
 import math as m
 
