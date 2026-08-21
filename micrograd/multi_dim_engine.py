@@ -1,3 +1,7 @@
+# Implementation of N-dimensional autograd engine.
+# Inspired by Andrej Karpathy's micrograd (MIT License).
+# Copyright (c) 2026 Fahd Makdad   
+
 import numpy as np
 import math as m
 
