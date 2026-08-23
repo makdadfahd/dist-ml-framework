@@ -50,6 +50,11 @@ python micrograd/experiments/compare_activations.py
 ```
 
 ### Activation Benchmarks
+
+After completing the `multi_dim_engine` and training a neural network (`multi_dim_neural_network.ipynb`) using the ReLU activation function—reaching over 97.5% accuracy on MNIST dataset. We wanted to see what kind of differences would appear when using other activation functions like Sigmoid and Tanh. Since these are also among the most famous activation functions, we decided to compare them side-by-side so we could see firsthand why ReLU is so popular and why it remains the default choice in modern neural networks.
+
+The results are illustrated in the graph below : 
+
 ![Activation Benchmarks](activation_benchmark.png)
 
 * **ReLU:** **97.84%** test accuracy (Final Loss: `0.0193`)
