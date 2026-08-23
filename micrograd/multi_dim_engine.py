@@ -105,6 +105,22 @@ class Tensor :
 
         return out
 
+    def sigmoid(self) :
+        result = 1 / (1 + np.exp(-self.data))
+        out = Tensor(result, (self,))
+        def _backward() :
+            self.grad += out.grad * result * (1 - result)
+        out._backward = _backward
+        return out
+
+    def tanh(self) :
+        result = np.tanh(self.data)
+        out = Tensor(result,(self,))
+        def _backward() :
+            self.grad += out.grad * ( 1 - result**2)
+        out._backward = _backward
+        return out
+
     def sum(self, axe = None) :
         if axe is None : 
             out = Tensor(np.sum(self.data, keepdims=True),(self,))
