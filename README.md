@@ -61,6 +61,17 @@ The results are illustrated in the graph below :
 * **Tanh:** **97.72%** test accuracy (Final Loss: `0.0175`)
 * **Sigmoid:** **97.57%** test accuracy (Final Loss: `0.0494`)
 
+## Optimizer Benchmarks
+
+Following the activation function tests, we wanted to analyze the impact of the optimization algorithm on the network convergence. We evaluated our default-used **Adam** optimizer against the standard **Stochastic Gradient Descent (SGD)** on the MNIST dataset to observe how adaptive learning rates and momentum mechanics accelerate gradient descent. As you can see below, the performance gap is massive leaving no room for doubt as to why Adam is the most commonly used optimizer in today's neural networks.
+
+The results are illustrated in the graph below:
+
+![Optimizer Benchmarks](optimizer_benchmark_flag.png)
+
+* **Adam: 97.26%** test accuracy (Final Loss: `0.0475`)
+* **SGD: 42.42%** test accuracy (Final Loss: `1.4602`)
+
 ## Under the Hood
 
 * **The Computational Graph:** As you do operations (`+`, `@`, `relu`), we track them in a directed graph. Calling `.backward()` visits nodes in reverse topological order so every tensor gets its gradients in the exact right sequence.
