@@ -116,7 +116,7 @@ Yesterday and today were definitely tough. Figuring out the backward pass for `_
   * *Question:* Do I need to manually code a `_backward()` function for Softmax or Cross-Entropy?
   * *Insight:* No! Since Softmax and Cross-Entropy are built directly from my tracked primitives (`exp`, `log`, division, sum), the autograd engine handles the chain rule automatically. While production frameworks fuse these into a single custom backward pass for speed and numerical stability (avoiding `log(0)` or `exp` overflow), building them out of my underlying primitives proves my autograd engine's core graph mechanics actually work!
 
-  ### 📌 August 17, 2026 — Fused Cross-Entropy Backprop, Bug Fixes, & Adam Optimizer Integration
+### 📌 August 17, 2026 — Fused Cross-Entropy Backprop, Bug Fixes, & Adam Optimizer Integration
 
 Today was a massive breakthrough day, and honestly I am so happy with how everything turned out. The engine, the neural network, and the optimizer are all working together seamlessly!
 
@@ -134,3 +134,66 @@ Today was a massive breakthrough day, and honestly I am so happy with how everyt
   * **Training Run:** Imported Adam into my neural network script and ran a 400-iteration training test, printing loss every 50 steps. The loss plummeted from **2.4 down to ~0.0001**! Seeing the loss converge so smoothly proved that every layer of the architecture is solid.
 
 **Next Step:** Learn how to download and parse the raw MNIST dataset, then train my neural network on real-world handwritten digits using my custom engine and Adam optimizer!
+
+### 📌 August 19, 2026 — MNIST Benchmark Milestone (97.84% Test Accuracy)
+
+Today was a huge milestone for me. I downloaded the MNIST dataset using `torchvision` and ran my neural network using my own `multi_dim_engine`. 
+
+* **Benchmark Setup & Architecture:**
+  * **Dataset:** Loaded the standard MNIST dataset.
+  * **Network Structure:** Followed the standard architecture: `784 -> 128 -> 64 -> 10`.
+    * `784` inputs because each image is $28 \times 28$ pixels flattened out.
+    * `10` outputs corresponding to the digit classes (0 to 9).
+  * **Training Setup:** Trained for 10 epochs using my Adam optimizer and ReLU activations, which are pretty much the standard default choices today.
+
+* **Results & Verification:**
+  * My neural network worked so well! It reached **97.84% accuracy** on the test set in 10 epochs, which is an excellent result for a custom-built engine from scratch.
+  * Achieving this proves that my code and my engine are strong, well-structured, and that the gradients are flowing perfectly through every layer without dropping or exploding.
+
+* **Disclaimer:**
+  * *Note on Visualizations:* To visualize the training metrics and data, I used AI to generate the plotting code using the `matplotlib` library. I haven't learned `matplotlib` yet because I am focusing entirely on the core math and architecture of this engine. Letting AI handle the plotting saves me a lot of time so I can stay focused on what actually matters for this project right now.
+
+* **Next Step / Genuine Question:**
+  * But now I have a genuine question: I want to know what kind of performance would show up if I changed the activation function from ReLU to Sigmoid or Tanh? And what if I changed the optimizer from Adam to standard SGD? I want to test these variations and see visually why ReLU and Adam are always the default choices.
+
+  ### 📌 August 20, 2026 — Activation Function Benchmarking & Engine Extensions
+
+Today I started polishing my `README.md` to make the whole repository look clean and professional. I set up a dedicated `experiments/` directory inside my project so I can run and document all my tests without cluttering the main codebase.
+
+* **Extending the Engine for Activation Functions:**
+  * **Engine Updates:** My MLP was hardcoded to use ReLU. To test other activations, I added `sigmoid()` and `tanh()` methods directly inside the core `Tensor` class along with their corresponding backward pass logic.
+  * **MLP Flexibility:** Updated the `MLP` class in `nn.py` to accept an `activation` argument in `__init__` (defaulting to `'relu'`). Updated `__call__` with conditional logic to dynamically apply ReLU, Sigmoid, or Tanh based on the initialization setting.
+
+* **Building the Experiment Pipeline:**
+  * Created `experiments/compare_activations.py` with a reusable `run_experiment` function.
+  * The script trains models using identical seeds, initializations, and data splits to isolate the effect of the activation functions.
+  * Tracks key metrics (accuracy and loss curves over epochs) and exports them directly into a comparative chart.
+
+* **Results & Visuals:**
+  * Plotted the performance comparisons to directly display in the `README.md`.
+  * *Disclaimer:* As before, I used AI to generate the `matplotlib` code for generating the charts so I could save time and stay focused purely on the underlying engine mechanics and experiment design.
+
+**Next Step:** Run the optimizer comparisons (Adam vs. standard SGD) across the same setup to analyze convergence speeds and gradient behaviors visually!
+
+### 📌 August 21–29, 2026 — Optimizer Benchmark: Adam vs. SGD
+
+* **August 21–28:** Took a break for a travel trip!
+* **August 29 (Today):** Back at it! Added a new file `experiments/compare_optimizers.py` to compare standard SGD against Adam.
+
+* **Adding SGD to the Engine:**
+  * Added a simple `SGD` class inside `optimizer.py`. 
+  * It was super easy to write because SGD was actually the very first optimizer I learned about two months ago in Andrew Ng's *Machine Learning Specialization*.
+
+* **Experiment & Results:**
+  * Wrote a script to run both optimizers under the exact same setup and seed on MNIST.
+  * **SGD Test Accuracy:** **42.42%**
+  * **Adam Test Accuracy:** **97.26%**
+  * The difference was crazy! SGD performed extremely poorly compared to Adam. Seeing this firsthand really shows why Adam is almost always the default choice today—thanks to how it dynamically adjusts the learning rate for each parameter using momentum and adaptive scaling.
+
+* **Disclaimer:**
+  * *Note on Visualizations:* Just like before, the `matplotlib` chart code was generated using AI so I could save time and stay focused strictly on the core engine logic.
+
+* **Next Step / Final Benchmark Idea:**
+  * To wrap up this project, I want to run a direct head-to-head comparison between my custom engine and PyTorch! 
+  * I'll build the exact same architecture (`784 -> 128 -> 64 -> 10`) in PyTorch, train it on MNIST using the same parameters, and benchmark both the final test accuracy and execution speed (training time per epoch). 
+  * I'm really curious to see how close my pure Python/NumPy engine gets to C++/CUDA-backed PyTorch in terms of speed and accuracy!
