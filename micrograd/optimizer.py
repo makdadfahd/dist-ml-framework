@@ -27,3 +27,17 @@ class Adam :
     def zero_grad(self) :
         for p in self.params :
             p.grad = np.zeros_like(p.data)
+
+
+class SGD :
+    def __init__(self, params , alpha = 0.1):
+        self.alpha = alpha
+        self.params = params
+
+    def step(self) :
+        for p in self.params :
+             p.data = p.data - self.alpha * p.grad
+
+    def zero_grad(self) :
+        for p in self.params :
+            p.grad = np.zeros_like(p.data)
