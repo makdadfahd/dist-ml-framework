@@ -1,7 +1,6 @@
 import sys
 import os
 
-# Add parent directory (micrograd) to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from multi_dim_engine import Tensor
@@ -33,7 +32,6 @@ def run_experiment(activation_name, epochs=10, lr=0.001):
     model = MLP(784, [128, 64, 10], activation=activation_name)
     optimizer = Adam(model.parameters(), lr)
     
-    # 1. Lists to record metrics over time
     loss_history = []
     acc_history = []
 
@@ -58,11 +56,9 @@ def run_experiment(activation_name, epochs=10, lr=0.001):
 
             running_loss += loss.data
 
-        # 2. Record average batch loss for this epoch
         epoch_loss = running_loss / num_batches
         loss_history.append(epoch_loss)
 
-        # 3. Evaluate accuracy on the test set for this epoch
         test_scores = model(Tensor(X_test))
         test_preds = np.argmax(test_scores.data, axis=1)
         epoch_acc = np.mean(test_preds == y_test) * 100
@@ -72,7 +68,6 @@ def run_experiment(activation_name, epochs=10, lr=0.001):
 
     return loss_history, acc_history
 
-# --- Main Execution and Plotting ---
 activations = ['relu', 'tanh', 'sigmoid']
 history = {}
 
@@ -81,7 +76,7 @@ for act in activations:
     loss_hist, acc_hist = run_experiment(act, epochs=10, lr=0.001)
     history[act] = {'loss': loss_hist, 'acc': acc_hist}
 
-# Plotting the real collected history
+
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5), dpi=300)
 epochs_range = range(1, 11)
 
