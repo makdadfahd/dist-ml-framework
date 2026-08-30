@@ -156,7 +156,7 @@ Today was a huge milestone for me. I downloaded the MNIST dataset using `torchvi
 * **Next Step / Genuine Question:**
   * But now I have a genuine question: I want to know what kind of performance would show up if I changed the activation function from ReLU to Sigmoid or Tanh? And what if I changed the optimizer from Adam to standard SGD? I want to test these variations and see visually why ReLU and Adam are always the default choices.
 
-  ### 📌 August 20, 2026 — Activation Function Benchmarking & Engine Extensions
+### 📌 August 20, 2026 — Activation Function Benchmarking & Engine Extensions
 
 Today I started polishing my `README.md` to make the whole repository look clean and professional. I set up a dedicated `experiments/` directory inside my project so I can run and document all my tests without cluttering the main codebase.
 
@@ -197,3 +197,20 @@ Today I started polishing my `README.md` to make the whole repository look clean
   * To wrap up this project, I want to run a direct head-to-head comparison between my custom engine and PyTorch! 
   * I'll build the exact same architecture (`784 -> 128 -> 64 -> 10`) in PyTorch, train it on MNIST using the same parameters, and benchmark both the final test accuracy and execution speed (training time per epoch). 
   * I'm really curious to see how close my pure Python/NumPy engine gets to C++/CUDA-backed PyTorch in terms of speed and accuracy!
+
+### 📌 August 30, 2026 — Adding `learn()` & `pred()` Methods, Debugging Adam, and Hits +97.5% Accuracy
+
+Before comparing my engine to PyTorch, I decided to clean up my code so running benchmarks is much easier. Re-writing data shuffling and training loops every single time was getting annoying and repetitive!
+
+* **Refactoring the `MLP` Class:**
+  * **New Methods:** Added `learn()` and `pred()` methods directly inside the `MLP` class in `nn.py`.
+  * **Why I did this:** Instead of writing long loops for every experiment, I can now just call `model.learn()` and `model.pred()`. It makes my code much cleaner and easier to use.
+  * **Design Choice:** I know a general-purpose engine should work with any dataset, but right now I am focusing on MNIST as my main benchmark. Later on, I plan to look at PyTorch's `DataLoader` to see how professional frameworks handle datasets in a general way.
+
+* **Debugging & Tuning the Learning Rate:**
+  * I created `experiments/mnist_test.py` to test these new methods.
+  * **The Problem:** On my first try, the results were terrible—only **18% training accuracy** and **20% test accuracy**!
+  * **Finding the Fix:** I checked my code over and over, but the logic was correct. So I printed the loss for every epoch to see what was happening. The loss started around `2.x` and barely moved, even after 10 epochs.
+  * **The Solution:** I realized my Adam learning rate of `0.005` was too high, causing the updates to overshoot. I changed the learning rate from `0.005` to `0.003`, ran it again, and it worked like magic! The loss dropped fast, hitting **+98.5% training accuracy** and **+97.5% test accuracy**.
+
+**Next Step:** Compare my neural network with a PyTorch neural network to benchmark performance and speed!
