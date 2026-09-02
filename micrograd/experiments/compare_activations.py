@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from multi_dim_engine import Tensor
-from nn import MLP, cross_entropy_loss
+from neural_network import MLP, cross_entropy_loss
 from optimizer import Adam
 import numpy as np
 
@@ -49,7 +49,6 @@ def run_experiment(activation_name, epochs=10, lr=0.001):
 
             scores = model(x_batch)
             loss = cross_entropy_loss(y_batch, scores)
-
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
