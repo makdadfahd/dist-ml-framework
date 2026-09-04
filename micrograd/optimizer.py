@@ -2,7 +2,7 @@ from multi_dim_engine import Tensor
 import numpy as np
 
 class Adam : 
-    def __init__(self, params, lr = 0.001 , beta1 = 0.9 , beta2 = 0.99 , eps = 1e-8 ):
+    def __init__(self, params, lr = 0.003 , beta1 = 0.9 , beta2 = 0.99 , eps = 1e-8 ):
         self.params = params
         self.epsilon = eps 
         self.learning_rate = lr 
@@ -30,13 +30,13 @@ class Adam :
 
 
 class SGD :
-    def __init__(self, params , alpha = 0.1):
+    def __init__(self, params , alpha = 0.05):
         self.alpha = alpha
         self.params = params
 
     def step(self) :
         for p in self.params :
-             p.data = p.data - self.alpha * p.grad
+             p.data -= self.alpha * p.grad
 
     def zero_grad(self) :
         for p in self.params :
@@ -44,7 +44,7 @@ class SGD :
 
 
 class SGDM :
-    def __init__(self, params , rho = 0.9 , alpha = 0.01) :
+    def __init__(self, params , rho = 0.9 , alpha = 0.0007) :
         self.params = params
         self.rho = rho
         self.alpha = alpha
@@ -53,7 +53,7 @@ class SGDM :
     def step(self) :
         for i , p in enumerate(self.params) :
             self.v[i] = self.rho * self.v[i] + p.grad
-            p.data = p.data - self.alpha * self.v[i]
+            p.data -= self.alpha * self.v[i]
 
     def zero_grad(self) :
         for p in self.params :
@@ -61,7 +61,7 @@ class SGDM :
 
 
 class RMSProp :
-    def __init__(self , params , beta = 0.9 , eps = 1e-8 , lr = 0.01) :
+    def __init__(self , params , beta = 0.9 , eps = 1e-8 , lr = 0.001) :
         self.params = params
         self.beta = beta
         self.eps = eps
@@ -73,7 +73,7 @@ class RMSProp :
         for i , p in enumerate(self.params) :
             self.v[i] = self.beta * self.v[i] + (1 - self.beta) * p.grad**2 
 
-            p.data = p.data - (self.learning_rate / np.sqrt(self.v[i] + self.eps)) * p.grad
+            p.data -= (self.learning_rate / np.sqrt(self.v[i] + self.eps)) * p.grad
 
     def zero_grad(self) :
         for p in self.params :
