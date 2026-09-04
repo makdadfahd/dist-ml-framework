@@ -42,12 +42,9 @@ print("b grad:\n", b.grad) #prints b grad: [[4. 4.],[6. 6.]]
 
 ## Running MNIST
 
-We evaluated a 3-layer MLP ($784 \to 128 \to 64 \to 10$) trained with custom Adam optimizer and fused Softmax Cross-Entropy loss across 10 epochs.
+We evaluated a 3-layer MLP ($784 \to 128 \to 64 \to 10$) trained with custom Adam optimizer and fused Softmax Cross-Entropy loss across 10 epochs. Where we reached a 97.72% accuracy and a 0.0175 final loss.
 
-```bash
-python micrograd/experiments/compare_activations.py
-
-```
+![MNIST Test](mnist_benchmark.png)
 
 ### Activation Benchmarks
 
