@@ -4,8 +4,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from multi_dim_engine import Tensor
-from nn import MLP, cross_entropy_loss
-from optimizer import Adam , SGD
+from neural_network import MLP, cross_entropy_loss
+from optimizer import Adam , SGD ,SGDM , RMSProp
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -24,24 +24,37 @@ test_dataset = datasets.MNIST(root="./data", train=False, download=True)
 X_test = test_dataset.data.numpy().reshape(-1, 784).astype("float32") / 255.0
 y_test = test_dataset.targets.numpy()
 
-def run_experiment(epochs=10, lr=0.003, alpha = 0.1):
+def run_experiment(epochs=10):
     np.random.seed(42)
     model_adam = MLP(784, [128, 64, 10])
     
     np.random.seed(42)
     model_sgd = MLP(784, [128, 64, 10])
 
-    optimizer_adam = Adam(model_adam.parameters(), lr)
-    optimizer_sgd = SGD(model_sgd.parameters(), alpha)
+    np.random.seed(42)
+    model_sgdm = MLP(784, [128, 64, 10])
+
+    np.random.seed(42)
+    model_rmsprop = MLP(784, [128, 64, 10])
+
+    optimizer_adam = Adam(model_adam.parameters())
+    optimizer_sgd = SGD(model_sgd.parameters())
+    optimizer_sgdm = SGDM(model_sgdm.parameters())
+    optimizer_rmsprop = RMSProp(model_rmsprop.parameters())
+
 
     experiments = [
         ("Adam", model_adam, optimizer_adam),
-        ("SGD", model_sgd, optimizer_sgd)
+        ("SGD", model_sgd, optimizer_sgd),
+        ("SGDM", model_sgdm , optimizer_sgdm),
+        ("RMSProp", model_rmsprop , optimizer_rmsprop)
     ]
 
     history = {
         "Adam": {"loss": [], "acc": []},
-        "SGD": {"loss": [], "acc": []}
+        "SGD": {"loss": [], "acc": []},
+        "SGDM" : {"loss": [], "acc": []},
+        "RMSProp" : {"loss": [], "acc": []}
     }
 
     num_batches = num_samples // batch_size
@@ -87,11 +100,14 @@ def plot_benchmark(history):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
     
     # --- 1. LOSS PLOT ---
-    ax1.plot(epochs, history["Adam"]["loss"], label="Adam (lr=0.003)", color="#1f77b4", linewidth=2)
-    ax1.plot(epochs, history["SGD"]["loss"], label="SGD (lr=0.1)", color="#ff7f0e", linewidth=2)
-    
+    ax1.plot(epochs, history["Adam"]["loss"], label="Adam (lr=0.003)", color="#d3740e", linewidth=2)
+    ax1.plot(epochs, history["SGD"]["loss"], label="SGD (lr=0.05)", color="#36ff0e", linewidth=2)
+    ax1.plot(epochs, history["SGDM"]["loss"], label="SGD with Momentum (lr=0.0007)", color="#0e87ff", linewidth=2)
+    ax1.plot(epochs, history["RMSProp"]["loss"], label="RMSProp (lr=0.001)", color="#ff0e0e", linewidth=2)
+
+
     # Annotate Final Loss Flags
-    for name, color in [("Adam", "#1f77b4"), ("SGD", "#ff7f0e")]:
+    for name, color in [("Adam", "#d3740e"), ("SGD", "#36ff0e") , ("SGDM", "#0e87ff") , ("RMSProp", "#ff0e0e")]:
         final_loss = history[name]["loss"][-1]
         # Checkpoint dot
         ax1.scatter(final_epoch, final_loss, color=color, s=50, zorder=5)
@@ -113,11 +129,13 @@ def plot_benchmark(history):
     ax1.grid(True, linestyle="--", alpha=0.6)
     
     # --- 2. ACCURACY PLOT ---
-    ax2.plot(epochs, history["Adam"]["acc"], label="Adam", color="#1f77b4", linewidth=2)
-    ax2.plot(epochs, history["SGD"]["acc"], label="SGD", color="#ff7f0e", linewidth=2)
+    ax2.plot(epochs, history["Adam"]["acc"], label=f"Adam : {history["Adam"]["acc"][-1]:.2f}%", color="#d3740e", linewidth=2)
+    ax2.plot(epochs, history["SGD"]["acc"], label=f"SGD : {history["SGD"]["acc"][-1]:.2f}%", color="#36ff0e", linewidth=2)
+    ax2.plot(epochs, history["SGDM"]["acc"], label=f"SGD with Momentum : {history["SGDM"]["acc"][-1]:.2f}%", color="#0e87ff", linewidth=2)
+    ax2.plot(epochs, history["RMSProp"]["acc"], label=f"RMSProp : {history["RMSProp"]["acc"][-1]:.2f}%", color="#ff0e0e", linewidth=2)
     
     # Annotate Final Accuracy Flags
-    for name, color in [("Adam", "#1f77b4"), ("SGD", "#ff7f0e")]:
+    for name, color in [("Adam", "#d3740e"), ("SGD", "#36ff0e") , ("SGDM", "#0e87ff") , ("RMSProp", "#ff0e0e")]:
         final_acc = history[name]["acc"][-1]
         # Checkpoint dot
         ax2.scatter(final_epoch, final_acc, color=color, s=50, zorder=5)
