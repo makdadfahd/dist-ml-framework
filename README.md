@@ -63,14 +63,26 @@ The results are illustrated in the graph below :
 
 ## Optimizer Benchmarks
 
-Following the activation function tests, we wanted to analyze the impact of the optimization algorithm on the network convergence. We evaluated our default-used **Adam** optimizer against the standard **Stochastic Gradient Descent (SGD)** on the MNIST dataset to observe how adaptive learning rates and momentum mechanics accelerate gradient descent. As you can see below, the performance gap is massive leaving no room for doubt as to why Adam is the most commonly used optimizer in today's neural networks.
+Following the activation function tests, we compared four main optimizers—**SGD**, **SGD with Momentum (SGDM)**, **RMSProp**, and **Adam**—on the MNIST dataset to see how learning rate adjustments and momentum affect training speed and accuracy.
+
+While **RMSProp** finished with the highest score (**97.90%**), **Adam** (**97.26%**) clearly showed why it is the default choice for most neural networks. Adam worked almost perfectly on the very first try using default settings (`lr=0.003`), needing zero time spent on tweaking parameters.
+
+In contrast, the other optimizers required a lot of extra effort:
+
+* **SGD & SGDM:** Finding the right learning rate took hours of frustrating trial-and-error. Small mistakes caused the models to fail completely (getting stuck at 11.35% accuracy) or learn too slowly. Even after a lot of tuning (`lr=0.0007`), SGDM only reached **90.39%**, while plain SGD eventually hit **97.07%** (`lr=0.05`).
+
+* **RMSProp:** It got the top score (**97.90%**), but only after adjusting the learning rate down to `0.001` so it wouldn't jump past the best solutions.
+
+This test proves a big practical point: while traditional methods like SGD can get good results if you spend hours tweaking them, Adam saves developers tons of time by giving great performance right away.
 
 The results are illustrated in the graph below:
 
 ![Optimizer Benchmarks](optimizer_benchmark_flag.png)
 
 * **Adam: 97.26%** test accuracy (Final Loss: `0.0475`)
-* **SGD: 42.42%** test accuracy (Final Loss: `1.4602`)
+* **SGD: 97.07%** test accuracy (Final Loss: `0.0801`)
+* **SGD with momentum: 90.39%** test accuracy (Final Loss: `0.3244`)
+* **RMSProp: 97.90%** test accuracy (Final Loss: `0.0234`)
 
 ## Under the Hood
 
