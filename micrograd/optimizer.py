@@ -41,3 +41,41 @@ class SGD :
     def zero_grad(self) :
         for p in self.params :
             p.grad = np.zeros_like(p.data)
+
+
+class SGDM :
+    def __init__(self, params , rho = 0.9 , alpha = 0.01) :
+        self.params = params
+        self.rho = rho
+        self.alpha = alpha
+        self.v = [np.zeros_like(p.data) for p in self.params]
+
+    def step(self) :
+        for i , p in enumerate(self.params) :
+            self.v[i] = self.rho * self.v[i] + p.grad
+            p.data = p.data - self.alpha * self.v[i]
+
+    def zero_grad(self) :
+        for p in self.params :
+            p.grad = np.zeros_like(p.data)
+
+
+class RMSProp :
+    def __init__(self , params , beta = 0.9 , eps = 1e-8 , lr = 0.01) :
+        self.params = params
+        self.beta = beta
+        self.eps = eps
+        self.learning_rate = lr
+        self.v = [np.zeros_like(p.data) for p in self.params]
+
+
+    def step(self) :
+        for i , p in enumerate(self.params) :
+            self.v[i] = self.beta * self.v[i] + (1 - self.beta) * p.grad**2 
+
+            p.data = p.data - (self.learning_rate / np.sqrt(self.v[i] + self.eps)) * p.grad
+
+    def zero_grad(self) :
+        for p in self.params :
+            p.grad = np.zeros_like(p.data)
+        
