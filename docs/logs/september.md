@@ -26,3 +26,52 @@ I switched to a 2-hour video on networking fundamentals that explained everythin
 * **Side Note:**
   * The head-to-head benchmark against PyTorch is still planned! I am just taking a short, fun detour into socket programming right now so I can eventually use it to build distributed training features for my tensor engine.
 
+### 📌 September 2, 2026 — Head-to-Head PyTorch Parity Benchmark (Initial Accuracy Test)
+
+Today I ran the first head-to-head benchmark comparing my custom tensor engine directly against PyTorch on the MNIST dataset to test for loss and accuracy parity.
+
+* **Benchmark Setup & Architecture:**
+  * **PyTorch Model (`pytorch_baseline.py`):** Built a baseline model inheriting from PyTorch's `nn.Module` using the standard `784 -> 128 -> 64 -> 10` structure with ReLU activations and Cross-Entropy Loss.
+  * **Custom Model (`mymodel.py`):** Set up my custom engine model with the exact same architecture.
+  * **Standardized Training:** Both models used a clean `train_model()` helper function to run 10 epochs with a batch size of 64 inside `pytorch_parity_benchmark.py`.
+
+* **Debugging & Problem Solving:**
+  * During the initial run, I hit a severe error saying gradients couldn't be calculated for my model.
+  * AI suggested refactoring my core engine, but I knew my engine was solid from past tests and refused to rewrite it.
+  * After auditing my new script, I found the bug: inside `mymodel.py`, I forgot to wrap `x_train` in my `Tensor` class! I wrote raw `x_train` instead of `Tensor(x_train)`.
+  * Once I wrapped the input in `Tensor()`, the autograd graph connected properly and everything worked smoothly.
+
+* **Initial Benchmark Results (Accuracy Parity):**
+  * **PyTorch Baseline:** Finished with **97.45% test accuracy**with an average epoch time around **1.9s–2.1s**.
+  * **Custom Engine:** Finished with **97.26% test accuracy**with epoch times ranging from **2.2s to ~5.9s**..
+
+* **Performance Context & Reflection:**
+  * **Speed vs. Accuracy:** I already expected PyTorch to win on execution speed because under the hood it's written in C++ and optimized by hundreds of top engineers. My engine is pure Python and NumPy running on a single thread.
+  * **The Real Victory:** In terms of accuracy and loss trajectory, my engine stood completely **head-to-head with PyTorch** (97.26% vs 97.45%). Reaching near-identical convergence on a real dataset proves that the autograd graph, tensor operations, parameter update mechanics, and matrix calculus in my custom engine are mathematically sound and rock solid!
+
+* **Note:** This is just the first benchmark focused purely on accuracy parity. I haven't added the charts to the `README.md` yet—I'll update the main README once I finish comparing all the other dimensions (like execution speed and epoch timing).
+
+**Next Step:** Expand the benchmark comparisons to cover performance/timing dimensions, then organize the results for the `README.md`.
+
+### 📌 September 4, 2026 — 4-Way Optimizer Benchmark (Adam, SGD, SGDM, RMSProp)
+
+Today I decided to expand my optimizer comparison into a full 4-way benchmark! I wanted to compare all four major optimizers I learned about in Stanford CS231n: **Adam**, **SGD**, **SGD with Momentum (SGDM)**, and **RMSProp**.
+
+* **Extending the benchmark (`optimizer.py`):**
+  * Added `SGDM` and `RMSProp` classes to `optimizer.py`.
+  * Implementing the formulas was pretty smooth because I had good notes from CS231n on velocity tracking for Momentum and moving averages of squared gradients for RMSProp.
+
+* **Hyperparameter Tuning Headache:**
+  * Updating `experiments/compare_optimizers.py` to run all four models gave me a huge headache with initial hyperparameters!
+  * Standard SGD stuck around 42.42% accuracy, while SGDM was completely stuck at ~11.35% across all 10 epochs. 
+  * After spending an hour tuning learning rates, I finally dialled them in and got every optimizer to converge nicely:
+    * **Adam ($\text{lr} = 0.003$):** Hit **97.26% test accuracy** (Loss: ~0.02).
+    * **RMSProp ($\text{lr} = 0.001$):** Finished highest at **97.90% test accuracy** (Loss: 0.0234).
+    * **SGD ($\text{lr} = 0.05$):** Jumped up to **97.07% test accuracy** once the learning rate was increased (Loss: 0.0891).
+    * **SGD with Momentum ($\text{lr} = 0.0007$):** Settled at **90.39% test accuracy** (Loss: 0.3244).
+
+* **Takeaway:**
+  * Seeing all four loss trajectories side-by-side shows how sensitive standard momentum and SGD are to exact learning rates compared to adaptive learning rate methods like Adam and RMSProp, which drop loss rapidly right from epoch 1.
+  * *Note:* Full loss curves and exact metrics will be documented directly in the project `README.md`.
+
+**Next Step:** Add these benchmark comparisons to the repository documentation and get back to working on distributed networking features!
