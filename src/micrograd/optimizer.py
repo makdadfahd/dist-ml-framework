@@ -1,4 +1,4 @@
-from multi_dim_engine import Tensor
+from micrograd.multi_dim_engine import Tensor
 import numpy as np
 
 class Adam : 

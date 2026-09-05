@@ -1,11 +1,6 @@
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from multi_dim_engine import Tensor
-from neural_network import MLP, cross_entropy_loss
-from optimizer import Adam
+from micrograd.multi_dim_engine import Tensor
+from micrograd.neural_network import MLP, cross_entropy_loss
+from micrograd.optimizer import Adam
 import numpy as np
 
 import torch
