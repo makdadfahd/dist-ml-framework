@@ -75,3 +75,25 @@ Today I decided to expand my optimizer comparison into a full 4-way benchmark! I
   * *Note:* Full loss curves and exact metrics will be documented directly in the project `README.md`.
 
 **Next Step:** Add these benchmark comparisons to the repository documentation and get back to working on distributed networking features!
+
+### 📌 September 5, 2026 — Parameter Parity Benchmark across 5 Seeds, Repository Restructuring, & Tensor Socket Serialization
+
+Today was packed with major performance validations, structural cleanup, and progress on the networking side.
+
+* **Multi-Seed Benchmark with Weight Parity (`equalize_parameters`):**
+  * **Methodology:** Created an `equalize_parameters()` helper to sync weights and biases between my engine and PyTorch before training, ensuring a completely fair starting point.
+  * **Test Setup:** Evaluated both models across 5 distinct random seeds (`[22, 32, 42, 52, 62]`).
+  * **Loss Parity:** The training loss curves for both models were literally overlaid on top of each other, confirming total mathematical and backprop equivalence.
+  * **Accuracy:** My engine actually edged out PyTorch on 4 out of 5 seeds (`32`, `42`, `52`, `62`) and only lost by a fraction of a percent (about a tenth of a percent) on seed `22`.
+  * **Execution Speed:** PyTorch ran consistently fast at 1.0s–2.5s per epoch. My engine averaged 3s–5s per epoch, with occasional spikes over 20 seconds.
+  * *Note:* Graphs and comprehensive seed logs will be added to the main `README.md` in the coming days.
+
+* **Repository Restructuring (`src/` Architecture):**
+  * **Legacy Cleanup:** Moved the original 1D scalar engine from `micrograd/` into a root-level `legacy/` folder.
+  * **Flat Directory Layout:** Moved `experiments/` to the root directory, and created a top-level `src/` directory containing `micrograd/` and `network/` to eliminate messy nested paths.
+  * **Package Setup (`pyproject.toml`):** Added a `pyproject.toml` configuration to make the project an editable local package. Now I can import directly via `from micrograd.multi_dim_engine import Tensor` without hacking `sys.path` or `os` paths in my scripts!
+
+* **Distributed Networking — Tensor Serialization:**
+  * Successfully transmitted a live `Tensor` across the local network using Python's `pickle` library!
+  * **Method:** Serialized `tensor.data` (the raw NumPy array) on the server, transmitted the bytes via TCP socket, and re-wrapped the received array into a `Tensor` object on the client side.
+
