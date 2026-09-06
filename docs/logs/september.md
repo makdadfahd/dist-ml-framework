@@ -97,3 +97,19 @@ Today was packed with major performance validations, structural cleanup, and pro
   * Successfully transmitted a live `Tensor` across the local network using Python's `pickle` library!
   * **Method:** Serialized `tensor.data` (the raw NumPy array) on the server, transmitted the bytes via TCP socket, and re-wrapped the received array into a `Tensor` object on the client side.
 
+
+### 📌 September 6, 2026 — Researching Pickle Security Vulnerabilities vs. JSON
+
+After research, I have found that using `pickle` is considered unsafe because unpickling doesn't just read data—it can execute code. 
+
+* **The Problem with `pickle`:**
+  * When you call `pickle.loads()` on something, you are not just decoding bytes into a Python object the way you can with JSON.
+  * `pickle`'s format can include instructions that tell Python to actually execute arbitrary commands during the loading process.
+  * If someone sends you a maliciously crafted `pickle` payload, calling `pickle.loads()` on your side can run code on your machine without you ever noticing. `pickle` doesn't have that safety boundary.
+
+* **Why JSON / Safe Alternatives are Better:**
+  * `json.loads()` can only ever produce plain data (strings, numbers, lists, dicts).
+  * There is no way for a JSON payload to make your program do something beyond handling your data.
+
+* **Takeaway:**
+  * For network tensor serialization, I need to move away from `pickle` and use safe data formats (like raw byte buffers or JSON arrays) so receiving nodes aren't vulnerable to code injection.
