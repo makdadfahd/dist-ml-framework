@@ -1,13 +1,13 @@
 import socket 
-import threading
 import numpy as np
-import pickle
 from micrograd.multi_dim_engine import Tensor
+from network.tensorconnection import TensorConnection
+
 
 #implement the constants :
 server_address = socket.gethostbyname(socket.gethostname())
 port = 5050
-tensor = Tensor([[1 , 2 , 3],
+test_tensor = Tensor([[1 , 2 , 3],
                  [4 , 5 , 6]     ,
                  [7 , 8 , 9]])
 
@@ -23,9 +23,11 @@ clientsocket , address = server_socket.accept()
 print(f"Connection received from {address}\n")
 
 
-#sending data to the clients
-clientsocket.sendall(pickle.dumps(tensor.data))
-print("Data sent successfully...")
+#sending tensor to the worker
+
+master = TensorConnection(clientsocket)
+master.send_tensor(test_tensor)
+print("Tensor sent successfully...")
 
 
 #closing client and server socket
