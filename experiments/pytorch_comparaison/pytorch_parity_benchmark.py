@@ -1,7 +1,3 @@
-import sys , os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-
 #start by importing the necessary libraries
 from mymodel import Engine_Model , train_model
 from pytorch_baseline import Model_pytorch , train_pytorch
@@ -33,9 +29,12 @@ def set_seed(torch_params, my_params):
 
 
 #defining the seeds 
-seeds = [22 , 32 , 42 , 52, 62]
-
-
+seeds = [0 , 1 , 2 , 3, 4]
+all_custom_losses = []
+all_pytorch_losses = []
+all_custom_acc = []
+all_pytorch_acc= []
+ 
 #looping trough seeds
 
 for seed in seeds :
@@ -55,26 +54,51 @@ for seed in seeds :
     pytorch_history = train_pytorch(pytorch_model, x_train , y_train, x_test, y_test)
     mymodel_history = train_model(my_model, x_train , y_train, x_test, y_test)
 
+    #appending the accuracy and loss we have got to the all loss and accuracy lists to make a 2D array
+    all_custom_losses.append(mymodel_history["loss"])
+    all_pytorch_losses.append(pytorch_history["loss"])
+    all_custom_acc.append(mymodel_history["acc"])
+    all_pytorch_acc.append(pytorch_history["acc"])
 
-    #setting the graph parameters 
-    epochs = range(1,11)
-    plt.figure(figsize=(10, 4))
+#getting the mean and std
+all_custom_losses = np.array(all_custom_losses)
+mean_custom_loss = all_custom_losses.mean(axis = 0)
+std_custom_loss = all_custom_losses.std(axis = 0)
 
-    plt.subplot(1, 2, 1)
-    plt.plot(epochs, mymodel_history["loss"], label="Custom Adam", color="#1f77b4")
-    plt.plot(epochs, pytorch_history["loss"], label="PyTorch Adam", color="#EE4C2C", linestyle="--")
-    plt.title("Loss Trajectory")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.legend()
+all_pytorch_losses = np.array(all_pytorch_losses)
+mean_pytorch_loss = all_pytorch_losses.mean(axis = 0)
+std_pytorch_loss = all_pytorch_losses.std(axis = 0)
 
-    plt.subplot(1, 2, 2)
-    plt.plot(epochs, mymodel_history["acc"], label="Custom Adam", color="#1f77b4")
-    plt.plot(epochs, pytorch_history["acc"], label="PyTorch Adam", color="#EE4C2C", linestyle="--")
-    plt.title("Test Accuracy (%)")
-    plt.xlabel("Epochs")
-    plt.ylabel("Accuracy (%)")
-    plt.legend()
+all_custom_acc = np.array(all_custom_acc)
+mean_custom_acc = all_custom_acc.mean(axis = 0)
+std_custom_acc = all_custom_acc.std(axis = 0)
 
-    plt.tight_layout()
-    plt.savefig(f"pytorch_vs_custom_{seed}.png", dpi=300)
+all_pytorch_acc = np.array(all_pytorch_acc)
+mean_pytorch_acc = all_pytorch_acc.mean(axis = 0)
+std_pytorch_acc = all_pytorch_acc.std(axis = 0)
+
+#plotting the results :
+epochs = range(1,11)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+ax1.plot(epochs, mean_custom_loss, label="Custom Adam")
+ax1.fill_between(epochs, mean_custom_loss - std_custom_loss, mean_custom_loss + std_custom_loss, alpha=0.2)
+ax1.plot(epochs, mean_pytorch_loss, label="PyTorch Adam")
+ax1.fill_between(epochs, mean_pytorch_loss - std_pytorch_loss, mean_pytorch_loss + std_pytorch_loss, alpha=0.2)
+ax1.set_title("Loss Trajectory (5 Seeds)")
+ax1.set_xlabel("Epochs")
+ax1.set_ylabel("Loss")
+ax1.legend()
+
+ax2.plot(epochs, mean_custom_acc, label="Custom Adam")
+ax2.fill_between(epochs, mean_custom_acc - std_custom_acc, mean_custom_acc + std_custom_acc, alpha=0.2)
+ax2.plot(epochs, mean_pytorch_acc, label="PyTorch Adam")
+ax2.fill_between(epochs, mean_pytorch_acc - std_pytorch_acc, mean_pytorch_acc + std_pytorch_acc, alpha=0.2)
+ax2.set_title("Test Accuracy (5 Seeds)")
+ax2.set_xlabel("Epochs")
+ax2.set_ylabel("Accuracy (%)")
+ax2.legend()
+
+plt.tight_layout()
+plt.savefig("comparison_5seeds.png")

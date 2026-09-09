@@ -46,7 +46,20 @@ We evaluated a 3-layer MLP ($784 \to 128 \to 64 \to 10$) trained with custom Ada
 
 ![MNIST Test](mnist_benchmark.png)
 
-### Activation Benchmarks
+## Results (PyTorch Comparaison)
+
+To validate correctness, the custom engine was benchmarked directly against PyTorch on MNIST, using identical architecture, hyperparameters, and initial weights (both models seeded identically to eliminate initialization as a confounding variable, in other words, to eliminate the luck factor for both models)
+
+### Training Curves :
+
+Loss trajectory and test accuracy over 10 epochs, custom engine vs PyTorch :
+
+![Loss and Accuracy Comparison](comparison_5seeds.png)
+
+Across 5 independent seeds, loss trajectories remain nearly indistinguishable throughout training, and final test accuracy is statistically comparable between implementations.
+
+
+## Activations Benchmark
 
 After completing the `multi_dim_engine` and training a neural network (`neural_network.py`) using the ReLU activation function—reaching over 97.5% accuracy on MNIST dataset. We wanted to see what kind of differences would appear when using other activation functions like Sigmoid and Tanh. Since these are also among the most famous activation functions, we decided to compare them side-by-side so we could see firsthand why ReLU is so popular and why it remains the default choice in modern neural networks.
 
@@ -58,7 +71,7 @@ The results are illustrated in the graph below :
 * Tanh: 97.72% test accuracy (Final Loss: `0.0175`)
 * Sigmoid: 97.57% test accuracy (Final Loss: `0.0494`)
 
-## Optimizer Benchmarks
+## Optimizers Benchmark
 
 Following the activation function tests, we compared four main optimizers— SGD, SGD with Momentum (SGDM), RMSProp, and Adam —on the MNIST dataset to see how learning rate adjustments and momentum affect training speed and accuracy.
 
@@ -84,5 +97,6 @@ The results are illustrated in the graph below:
 ## Under the Hood
 
 * **The Computational Graph:** As you do operations (`+`, `@`, `relu`), we track them in a directed graph. Calling `.backward()` visits nodes in reverse topological order so every tensor gets its gradients in the exact right sequence.
-* **Vectorized Autograd:** Instead of tracking scalar floats one-by-one, we track $N$-dimensional arrays. Matrix multiplications use $A^T$ transpose rules, and batch broadcasting automatically sums gradients back down to match the original tensor shape.
+* **Vectorized Autograd:** Instead of tracking scalar floats one-by-one, we track $N$-dimensional arrays. Matrix multiplications use transpose rules, and batch broadcasting automatically sums gradients back down to match the original tensor shape.
 * **Fused Loss Trick:** Softmax and Cross-Entropy are merged into a single clean math step ($\frac{\partial L}{\partial z_i} = p_i - y_i$). We subtract the maximum value before exponentiating so numbers don't explode into `inf` or `NaN`.
+* **Adam Optimizer:** Maintains two running averages per parameter - a first moment (exponential moving average of the gradient) and a second (exponetial moving average of the squared gradient). Since both start at zero, early estimates are biased towards zero; we apply bias correction to compensate, dividing each moment by a factor that approaches 1 as training progresses. The final parameter update scales the gradient average by the inverse square root of the squared gradient average - this is what makes Adam "adaptive":parameteres with consistently large gradients get smaller effective steps, and vise-versa. 
