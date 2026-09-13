@@ -58,6 +58,38 @@ Loss trajectory and test accuracy over 10 epochs, custom engine vs PyTorch :
 
 Across 5 independent seeds, loss trajectories remain nearly indistinguishable throughout training, and final test accuracy is statistically comparable between implementations.
 
+### Statistical Summary (5 Seeds)
+
+| Seed | Custom Final Acc (%) | PyTorch Final Acc (%) | Custom Final Loss | PyTorch Final Loss |
+|------|----------------------|------------------------|--------------------|----------------------|
+| 0    | 97.33                | 97.47                  | 0.0280             | 0.0286               |
+| 1    | 97.89                | 97.88                  | 0.0261             | 0.0309               |
+| 2    | 97.68                | 97.42                  | 0.0270             | 0.0295               |
+| 3    | 97.50                | 97.29                  | 0.0284             | 0.0290               |
+| 4    | 97.91                | 97.41                  | 0.0275             | 0.0289               |
+| **Mean ± Std** | **97.66% ± 0.22%** | **97.49% ± 0.20%** | **0.0274 ± 0.0008** | **0.0294 ± 0.0008** |
+
+Across 5 seeds, the custom engine's mean accuracy is marginally higher than
+PyTorch's, with overlapping standard deviations — indicating the two
+implementations are statistically equivalent, not meaningfully different.
+
+### Performance
+
+| | Custom Engine | PyTorch |
+|---|---|---|
+| Avg. time/epoch | 3.84s | 1.64s |
+| Avg. total training time (10 epochs) | 38.36s | 16.38s |
+
+PyTorch is roughly 2.3x faster, due to its optimized C++/CUDA backend; this
+implementation prioritizes correctness, transparency, and educational clarity
+(every operation implemented and readable in pure Python/NumPy) over raw
+performance.
+
+### Reproduce
+
+```bash
+python microgad/experiments/pytorch_comparaison/pytorch_parity_benchmark.py
+```
 
 ## Activations Benchmark
 
@@ -70,6 +102,12 @@ The results are illustrated in the graph below :
 * ReLU: 97.84% test accuracy (Final Loss: `0.0193`)
 * Tanh: 97.72% test accuracy (Final Loss: `0.0175`)
 * Sigmoid: 97.57% test accuracy (Final Loss: `0.0494`)
+
+### Reproduce
+
+```bash
+python microgad/experiments/compare_activations.py
+```
 
 ## Optimizers Benchmark
 
@@ -93,6 +131,12 @@ The results are illustrated in the graph below:
 * SGD: 97.07% test accuracy (Final Loss: `0.0801`)
 * SGD with momentum: 90.39% test accuracy (Final Loss: `0.3244`)
 * RMSProp: 97.90% test accuracy (Final Loss: `0.0234`)
+
+### Reproduce
+
+```bash
+python microgad/experiments/compare_optimizers.py
+```
 
 ## Under the Hood
 
