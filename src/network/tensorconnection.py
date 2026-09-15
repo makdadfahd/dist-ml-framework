@@ -18,18 +18,14 @@ class TensorConnection :
 
         #preparing the json info about the array and getting the length of the json info
         json_info = json.dumps(arr_info).encode('utf-8')
-        len_json_info = struct.pack('!I', len(json_info))
 
-        #sending information through socket
-        self.socket.sendall(len_json_info)
-        self.socket.sendall(json_info)
+        #we send the json info using the new method _send_msg, then we send the array data as bytes :
+        self.socket._send_msg(json_info)
         self.socket.sendall(arr_bytes)
 
     def recv_tensor(self) :
-        #receive the length of the json information
+        #receive the length of the json information and unpacking them
         info_length = self._recv_exact(4) 
-
-        #unpacking the length of the json info
         len_json_info = struct.unpack('!I', info_length)[0]
 
         #receiving the json info :
@@ -57,3 +53,12 @@ class TensorConnection :
                 raise ConnectionError("Connection problem while receiving data !!")
             full_msg += chunk
         return full_msg
+
+    def _send_msg(self, json_data:bytes) :
+        #we get the json data length
+        len_data = struct.pack('!I', len(json_data))
+
+        #we send the data length and data as bytes
+        self.socket.sendall(len_data)
+        self.socket.sendall(json_data)
+        
