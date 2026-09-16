@@ -2,6 +2,8 @@ import socket
 import numpy as np
 from micrograd.multi_dim_engine import Tensor
 from network.tensorconnection import TensorConnection
+from network.rpcserver import RPCServer
+import time
 
 
 #implement the constants :
@@ -25,10 +27,11 @@ print(f"Connection received from {address}\n")
 
 #sending tensor to the worker
 
-master = TensorConnection(clientsocket)
-master.send_tensor(test_tensor)
-print("Tensor sent successfully...")
+master = RPCServer(clientsocket)
 
+time.sleep(10)
+master.serve_request()
+print("Response sent successfully !!")
 
 #closing client and server socket
 clientsocket.close()
