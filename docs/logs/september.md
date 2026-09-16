@@ -113,3 +113,26 @@ After research, I have found that using `pickle` is considered unsafe because un
 
 * **Takeaway:**
   * For network tensor serialization, I need to move away from `pickle` and use safe data formats (like raw byte buffers or JSON arrays) so receiving nodes aren't vulnerable to code injection.
+
+### 📌 September 7–9, 2026 — Safe NumPy Serialization, Custom Binary Protocol, & `TensorConnection` Implementation
+
+After searching YouTube and Coursera, I couldn't find a course covering how to serialize NumPy arrays and send them securely without `pickle`. I turned to web documentation to research binary array transmission, and implementing it turned out to be straightforward.
+
+* **Custom Binary Transmission Protocol:**
+  * **Array Serialization:** Transformed the NumPy array into raw bytes using `array.tobytes()`.
+  * **Metadata Dictionary:** Created a dictionary containing the array's metadata: `shape`, `dtype`, and byte `length`.
+  * **Header Packaging:** Converted the metadata dictionary into a JSON string and encoded it into bytes. To tell the receiver where the JSON metadata ends, I packed its length into a fixed 4-byte header using Python's `struct.pack('!I', header_length)`.
+  * **Payload Assembly:** Sent three sequential components over the socket: `header` (4 bytes) $\rightarrow$ `array_info` (JSON bytes) $\rightarrow$ `array_data` (raw NumPy bytes).
+
+* **Receiver Deserialization Pipeline:**
+  * **Header Parsing:** Received exactly 4 bytes first and unpacked them using `struct.unpack()` to get the metadata length as an integer.
+  * **Metadata Decoding:** Read the exact number of bytes specified by the header to retrieve and parse the JSON metadata using `json.loads()`.
+  * **Array Reconstruction:** Read the exact array byte length specified in the metadata, converted the buffer back into a NumPy array with `np.frombuffer()`, and reshaped/casted it using the original `shape` and `dtype`.
+  * Tested this logic in a simple client-server script, and the array was transmitted and reconstructed with zero bugs.
+
+* **Implementing the `TensorConnection` Wrapper (`tensorconnection.py`):**
+  * Built a dedicated `TensorConnection` class to handle tensor network operations smoothly.
+  * **`send_tensor(tensor)`:** Extracts `tensor.data` as a NumPy array and sends it using the protocol explained earlier where it treats it as a normal numpy array.
+  * **`recv_tensor()`:** Receives the reconstructed NumPy array using the protocol and re-wraps it into a custom `Tensor` object.
+  * **`recv_exact(n_bytes)` Helper:** Wrote a utility method that loops over `socket.recv()` until the exact requested byte count is collected, eliminating partial packet loss issues.
+
