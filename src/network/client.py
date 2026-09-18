@@ -18,11 +18,10 @@ client_socket.connect((dest_address, dest_port))
 
 #receiving the Tensor from master
 worker = RPCServer(client_socket)
-while True :
-    print("We do you want to ask the server")
-    args = [int(x) for x in input("Enter numbers: ").split()]
-    response = worker.call("add", args)
-    print(f'The answer is : {response}')
 
-    print("\nResponse received successfully...")
+response = worker.call("add", [2,B])
+print(f'The answer is : {response}')
+
+print("\nResponse received successfully...")
     
+client_socket.close()
