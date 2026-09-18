@@ -7,42 +7,20 @@ class TensorConnection :
         self.socket = socket
 
     def send_tensor(self, tensor) :
-        #transforming tensor data into bytes , getting its length , and packing its information in a dict
-        arr_bytes = tensor.data.tobytes()
-        arr_length = len(arr_bytes)
-        arr_info = {
-            "dtype" : str(tensor.data.dtype),
-            "shape" : tensor.data.shape,
-            "length" : arr_length
-        }
+        #getting the tensor info and data bytes :
+        tensor_info , tensor_data_bytes = self.tensor_info(tensor)
+        json_info = json.dumps(tensor_info).encode('utf-8')
 
-        #preparing the json info about the array and getting the length of the json info
-        json_info = json.dumps(arr_info).encode('utf-8')
-
-        #we send the json info using the new method _send_msg, then we send the array data as bytes :
+        #sending them over the network
         self.socket._send_msg(json_info)
-        self.socket.sendall(arr_bytes)
+        self.socket.sendall(tensor_data_bytes)
 
     def recv_tensor(self) :
-        #receive the length of the json information and unpacking them
-        info_length = self._recv_exact(4) 
-        len_json_info = struct.unpack('!I', info_length)[0]
+        json_info = self.recv_json()
+        tensor_info = json.loads(json_info)
+        tensor = self.construct_tensor(tensor_info)
+        return tensor
 
-        #receiving the json info :
-        json_info = self._recv_exact(len_json_info).decode('utf-8')
-        
-        #loading the json info and getting the array length
-        arr_info = json.loads(json_info)
-        arr_length = arr_info["length"]
-
-        arr_bytes = self._recv_exact(arr_length)
-
-        array_data = np.frombuffer(arr_bytes, dtype= arr_info["dtype"])
-        array_data = array_data.reshape(arr_info["shape"])
-
-        return Tensor(array_data)
-
-    #defining a helper function to help us receive the exact number of bytes we need instead of writing loops each time
 
     def _recv_exact(self, n):
         full_msg = b''
@@ -61,4 +39,26 @@ class TensorConnection :
         #we send the data length and data as bytes
         self.socket.sendall(len_data)
         self.socket.sendall(json_data)
-        
+
+    def tensor_info(self, tensor) :
+        tensor_data_bytes = tensor.data.tobytes()
+        tensor_data_length = len(tensor_data_bytes)
+        tensor_dict = {
+            "dtype" : str(tensor.data.dtype),
+            "shape" : tensor.data.shape,
+            "length" : tensor_data_length
+        }
+        return (tensor_dict, tensor_data_bytes)
+
+    def construct_tensor(self, tensor_dict) :
+        tensor_length = tensor_dict["length"]
+        tensor_data_bytes = self._recv_exact(tensor_length)
+        tensor_data = np.frombuffer(tensor_data_bytes, dtype=tensor_dict["dtype"])
+        tensor = Tensor(tensor_data.reshape(tensor_dict["shape"]))
+        return tensor
+
+    def recv_json(self) :
+        info_length = self._recv_exact(4)
+        length_json_info = struct.unpack('!I', info_length)[0]
+        json_info = self._recv_exact(length_json_info).decode('utf-8')
+        return json_info
