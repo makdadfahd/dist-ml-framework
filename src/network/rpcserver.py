@@ -1,8 +1,11 @@
 import socket , struct , json
 from network.tensorconnection import TensorConnection
-
+from micrograd.multi_dim_engine import Tensor
 def add(*args) :
-    return sum(args)
+    total = 0
+    for arg in args :
+        total += arg
+    return total
 
 class RPCServer() :   
     def __init__(self, socket) :
@@ -37,45 +40,62 @@ class RPCServer() :
         return response
 
     def serve_request(self) :
-        #we receive the json info length 
-        info_length = self.conn._recv_exact(4)
-        len_json_info = struct.unpack('!I', info_length)[0]
-
-        #we call to receive the exact bytes number received in the length of the json info
-        request_json = self.conn._recv_exact(len_json_info).decode('utf-8')
-
-        #we load the request of the client, we get the function name and args (if they exist), and we dispatch them to give a response
-        request = json.loads(request_json)
+        request = self.conn._recv_msg()
         func = request["function_name"]
         args = request["args"]
-        response = self.dispatch(func , args)
+        new_args = []
+        for arg in args :
+            if arg == "TENSOR" :
+                tensor = self.conn.recv_tensor()
+                new_args.append(tensor)
+            else :
+                new_args.append(arg)
 
-        #we send the response back 
-        response_json = json.dumps(response).encode('utf-8')
-        self.conn._send_msg(response_json)
+        response = self.dispatch(func , new_args)
 
+        if response["status"] :
+            if isinstance(response["result"], Tensor) :
+                tensor = response["result"]
+                response["result"] = "TENSOR"
+                self.conn._send_msg(response)
+                self.conn.send_tensor(tensor)
+            else :
+                self.conn._send_msg(response)
+        else :
+            self.conn._send_msg(response)
 
     def call(self, function_name, arguments) :
-        #we send the request
+        #sending request
+        new_arguments = []
+        tensor_list = []
+
+        for arg in arguments :
+            if isinstance(arg, Tensor) :
+                new_arguments.append("TENSOR")
+                tensor_list.append(arg)
+            else :
+                new_arguments.append(arg)
+
         request = {
             "function_name" : function_name,
-            "args" : arguments
+            "args" : new_arguments
         }
-        request_json = json.dumps(request).encode('utf-8')
-        self.conn._send_msg(request_json)
 
-        #we receive the response 
-        response_length = self.conn._recv_exact(4)
-        len_response_json = struct.unpack('!I', response_length)[0]
+        self.conn._send_msg(request)
+        for tensor in tensor_list :
+            self.conn.send_tensor(tensor)
 
-        response_json = self.conn._recv_exact(len_response_json).decode('utf-8')
-        response = json.loads(response_json)
-
+        #receiving response
+        response = self.conn._recv_msg()
         status = response["status"]
 
-        #we check the response status , if true we get the response if not we get the alert message as an error
+        #checking status 
         if status : 
-            return response["result"]
+            if response["result"] == "TENSOR" :
+                tensor = self.conn.recv_tensor()
+                return tensor
+            else :
+                return response["result"]
         else :
             raise RuntimeError(response["message"])
 
