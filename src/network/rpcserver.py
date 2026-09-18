@@ -78,3 +78,10 @@ class RPCServer() :
             return response["result"]
         else :
             raise RuntimeError(response["message"])
+
+    def handle_client(self) :
+        while True :
+            try :
+                self.serve_request()
+            except ConnectionError :
+                break
