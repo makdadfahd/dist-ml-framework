@@ -136,3 +136,27 @@ After searching YouTube and Coursera, I couldn't find a course covering how to s
   * **`recv_tensor()`:** Receives the reconstructed NumPy array using the protocol and re-wraps it into a custom `Tensor` object.
   * **`recv_exact(n_bytes)` Helper:** Wrote a utility method that loops over `socket.recv()` until the exact requested byte count is collected, eliminating partial packet loss issues.
 
+### 📌 September 12–18, 2026 — Building the Distributed RPC Engine (`RPCServer`) & Handling Multi-Type Arguments
+
+After successfully setting up tensor socket serialization, I moved on to building the Remote Procedure Call (RPC) framework so distributed worker nodes can execute computations remotely.
+
+* **Implementing `RPCServer` (`rpcserver.py`):**
+  * **Initialization:** Integrated `TensorConnection` (`self.conn = TensorConnection(socket)`) inside `RPCServer` to give the server native tensor-aware socket communication.
+  * **Function Registry:** Initialized a `self.functions` dictionary to store all registered executable functions available to workers.
+  * **Execution Pipeline (`dispatch`):** 
+    * Checks if the requested function name exists in `self.functions`. If missing, returns an error status with `"function is not defined"`.
+    * Validates argument types before execution.
+    * Executes the function and packages the response into a structured dictionary containing a boolean `status` (`True` for success, `False` for failure) alongside the result payload or error message.
+  * **Request Cycle (`serve_request` & `call`):**
+    * **`serve_request()`:** Receives incoming JSON request dictionaries, extracts the function name and arguments, passes them to `dispatch()`, and transmits the result packet back over the socket.
+    * **`call()`:** Packages the function invocation request (`function_name`, `args`), sends it to `serve_request()`, blocks until a response is received, and returns either the computed output or the error message.
+
+* **RPC Validation Tests:**
+  * Tested a basic `add(a, b)` function remotely and successfully received correct sums.
+  * Tested an undefined function call (`mul`) and correctly received the `"function is not defined"` failure status, validating the RPC error handling flow.
+
+* **Current Challenge (Tensor Arguments in RPC):**
+  * **The Problem:** The current RPC request packet uses standard JSON serialization, which handles plain numbers and lists fine, but fails when trying to pass custom `Tensor` objects directly as arguments.
+  * **The Goal:** Modify `call()` and `serve_request()` so the RPC layer can automatically distinguish between primitive types (like integers and floats) and `Tensor` objects, serializing tensors via `TensorConnection` while keeping control metadata in JSON.
+
+.
