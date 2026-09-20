@@ -2,11 +2,54 @@ import socket , struct , json
 from network.tensorconnection import TensorConnection
 from micrograd.multi_dim_engine import Tensor
 
+class RPCClient() :
+    def __init__(self, socket) :
+        self.conn = TensorConnection(socket)
+
+    def call(self, function_name, arguments) :
+        #sending request
+        new_arguments = []
+        tensor_list = []
+
+        for arg in arguments :
+            if isinstance(arg, Tensor) :
+                new_arguments.append("TENSOR")
+                tensor_list.append(arg)
+            else :
+                new_arguments.append(arg)
+
+        request = {
+            "function_name" : function_name,
+            "args" : new_arguments
+        }
+
+        self.conn._send_msg(request)
+        for tensor in tensor_list :
+            self.conn.send_tensor(tensor)
+
+        #receiving response
+        response = self.conn._recv_msg()
+        status = response["status"]
+
+        real_response = []
+        #checking status 
+        if status : 
+            for i in range(len(response["result"])) :
+                if response["result"][i] == "TENSOR" :
+                    tensor = self.conn.recv_tensor()
+                    real_response.append(tensor)
+                else :
+                    real_response.append(response["result"][i])
+            return real_response
+
+        else :
+            raise RuntimeError(response["message"])
 
 class RPCServer() :   
-    def __init__(self, socket, params, optimzer) :
+    def __init__(self, socket, params , optimzer ) :
         self.conn = TensorConnection(socket)
-        self.functions = {}
+        self.functions = {"get_weights" : self.get_weights,
+                          "push_grads" : self.push_grads}
         self.params = params
         self.optimizer = optimzer
 
@@ -67,44 +110,7 @@ class RPCServer() :
         else :
             self.conn._send_msg(response)
 
-    def call(self, function_name, arguments) :
-        #sending request
-        new_arguments = []
-        tensor_list = []
-
-        for arg in arguments :
-            if isinstance(arg, Tensor) :
-                new_arguments.append("TENSOR")
-                tensor_list.append(arg)
-            else :
-                new_arguments.append(arg)
-
-        request = {
-            "function_name" : function_name,
-            "args" : new_arguments
-        }
-
-        self.conn._send_msg(request)
-        for tensor in tensor_list :
-            self.conn.send_tensor(tensor)
-
-        #receiving response
-        response = self.conn._recv_msg()
-        status = response["status"]
-
-        real_response = []
-        #checking status 
-        if status : 
-            for i in range(len(response["result"])) :
-                if response["result"][i] == "TENSOR" :
-                    tensor = self.conn.recv_tensor()
-                    real_response.append(tensor)
-                else :
-                    real_response.append(response["result"][i])
-            return real_response
-
-        else :
-            raise RuntimeError(response["message"])
+    
 
     def handle_client(self) :
         while True :
