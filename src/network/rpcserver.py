@@ -1,16 +1,14 @@
 import socket , struct , json
 from network.tensorconnection import TensorConnection
 from micrograd.multi_dim_engine import Tensor
-def add(*args) :
-    total = 0
-    for arg in args :
-        total += arg
-    return total
+
 
 class RPCServer() :   
-    def __init__(self, socket) :
+    def __init__(self, socket, params, optimzer) :
         self.conn = TensorConnection(socket)
-        self.functions = {"add" : add}
+        self.functions = {}
+        self.params = params
+        self.optimizer = optimzer
 
     def dispatch(self, function_name , args = []) :
         try :
@@ -52,15 +50,20 @@ class RPCServer() :
                 new_args.append(arg)
 
         response = self.dispatch(func , new_args)
+        tensors_list = []
 
         if response["status"] :
-            if isinstance(response["result"], Tensor) :
-                tensor = response["result"]
-                response["result"] = "TENSOR"
-                self.conn._send_msg(response)
-                self.conn.send_tensor(tensor)
-            else :
-                self.conn._send_msg(response)
+            for i in range(len(response["result"])) :
+                if isinstance(response["result"][i], Tensor) :
+                    tensor = response["result"][i]
+                    response["result"][i] = "TENSOR"
+                    tensors_list.append(tensor)
+
+            self.conn._send_msg(response["result"])
+
+            if len(tensors_list) > 0 :
+                for tensor in tensors_list:
+                    self.conn.send_tensor(tensor)
         else :
             self.conn._send_msg(response)
 
@@ -89,13 +92,17 @@ class RPCServer() :
         response = self.conn._recv_msg()
         status = response["status"]
 
+        real_response = []
         #checking status 
         if status : 
-            if response["result"] == "TENSOR" :
-                tensor = self.conn.recv_tensor()
-                return tensor
-            else :
-                return response["result"]
+            for i in range(len(response["result"])) :
+                if response["result"][i] == "TENSOR" :
+                    tensor = self.conn.recv_tensor()
+                    real_response.append(tensor)
+                else :
+                    real_response.append(response["result"][i])
+            return real_response
+
         else :
             raise RuntimeError(response["message"])
 
@@ -105,3 +112,17 @@ class RPCServer() :
                 self.serve_request()
             except ConnectionError :
                 break
+
+    def get_weigths(self) :
+        params = []
+        for param in self.params :
+            params.append(param)
+        return params
+
+    def push_grads(self, gradients) :
+        for i , gradient in enumerate(gradients) :
+            self.params.grad[i] = gradient
+
+        self.optimizer.step()
+        self.optimizer.zero_grad()
+        
