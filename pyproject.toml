@@ -14,4 +14,7 @@ dependencies = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["src", "experiments"]
+
+[tool.pyright]
+extraPaths = ["experiments"]
