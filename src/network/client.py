@@ -2,7 +2,7 @@ import socket
 import numpy as np
 from micrograd.multi_dim_engine import Tensor
 from network.tensorconnection import TensorConnection
-from network.rpcserver import RPCServer
+from network.rpcserver import RPCServer , RPCClient
 
 
 #implement the constants :
@@ -17,7 +17,7 @@ client_socket.connect((dest_address, dest_port))
 
 
 #receiving the Tensor from master
-worker = RPCServer(client_socket)
+worker = RPCClient(client_socket)
 
 response = worker.call("add", [2,B])
 print(f'The answer is : {response}')
