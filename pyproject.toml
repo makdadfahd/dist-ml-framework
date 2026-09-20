@@ -17,4 +17,4 @@ dependencies = [
 where = ["src", "experiments"]
 
 [tool.pyright]
-extraPaths = ["experiments"]
+extraPaths = ["src", "experiments"]
