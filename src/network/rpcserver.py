@@ -113,7 +113,7 @@ class RPCServer() :
             except ConnectionError :
                 break
 
-    def get_weigths(self) :
+    def get_weights(self) :
         params = []
         for param in self.params :
             params.append(param)
@@ -121,7 +121,7 @@ class RPCServer() :
 
     def push_grads(self, gradients) :
         for i , gradient in enumerate(gradients) :
-            self.params.grad[i] = gradient
+            self.params[i].grad = gradient
 
         self.optimizer.step()
         self.optimizer.zero_grad()
