@@ -99,9 +99,11 @@ The results are illustrated in the graph below :
 
 ![Activation Benchmarks](activation_benchmark.png)
 
-* ReLU: 97.84% test accuracy (Final Loss: `0.0193`)
-* Tanh: 97.72% test accuracy (Final Loss: `0.0175`)
-* Sigmoid: 97.57% test accuracy (Final Loss: `0.0494`)
+| Activation | Test Accuracy | Final Loss |
+|---|---|---|
+| ReLU | 97.84% | 0.0193 |
+| Tanh | 97.72% | 0.0175 |
+| Sigmoid | 97.57% | 0.0494 |
 
 ### Reproduce
 
@@ -127,10 +129,12 @@ The results are illustrated in the graph below:
 
 ![Optimizer Benchmarks](optimizer_benchmark_flag.png)
 
-* Adam: 97.26% test accuracy (Final Loss: `0.0475`)
-* SGD: 97.07% test accuracy (Final Loss: `0.0801`)
-* SGD with momentum: 90.39% test accuracy (Final Loss: `0.3244`)
-* RMSProp: 97.90% test accuracy (Final Loss: `0.0234`)
+| Optimizer | Test Accuracy | Final Loss |
+|---|---|---|
+| Adam | 97.26% | 0.0475 |
+| SGD | 97.07% | 0.0801 |
+| SGD with momentum | 90.39% | 0.3244 |
+| RMSProp | 97.90% | 0.0234 |
 
 ### Reproduce
 
