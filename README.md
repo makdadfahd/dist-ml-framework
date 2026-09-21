@@ -88,7 +88,7 @@ performance.
 ### Reproduce
 
 ```bash
-python microgad/experiments/pytorch_comparaison/pytorch_parity_benchmark.py
+python experiments/pytorch_comparaison/pytorch_parity_benchmark.py
 ```
 
 ## Activations Benchmark
@@ -108,7 +108,7 @@ The results are illustrated in the graph below :
 ### Reproduce
 
 ```bash
-python microgad/experiments/compare_activations.py
+python experiments/compare_activations.py
 ```
 
 ## Optimizers Benchmark
@@ -139,7 +139,7 @@ The results are illustrated in the graph below:
 ### Reproduce
 
 ```bash
-python microgad/experiments/compare_optimizers.py
+python experiments/compare_optimizers.py
 ```
 
 ## Under the Hood
