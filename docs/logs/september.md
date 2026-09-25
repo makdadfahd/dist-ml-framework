@@ -159,4 +159,26 @@ After successfully setting up tensor socket serialization, I moved on to buildin
   * **The Problem:** The current RPC request packet uses standard JSON serialization, which handles plain numbers and lists fine, but fails when trying to pass custom `Tensor` objects directly as arguments.
   * **The Goal:** Modify `call()` and `serve_request()` so the RPC layer can automatically distinguish between primitive types (like integers and floats) and `Tensor` objects, serializing tensors via `TensorConnection` while keeping control metadata in JSON.
 
-.
+### 📌 September 20–25, 2026 — Distributed Tensor RPC Transmission, Debugging Response Payloads, & Parameter Synchronization
+
+After setting up the basic RPC framework, I expanded it so the server and client can seamlessly handle custom `Tensor` objects passed inside argument lists and function returns.
+
+* **Tensor Argument Protocol (`call` Method):**
+  * **Payload Tagging:** When `call()` is invoked with a list of arguments containing `Tensor` instances, it creates a sanitized `args` list and a separate `list_tensors` list.
+  * **Flag Replacement:** Iterates through the original argument list; whenever a `Tensor` is detected, it appends a `"TENSOR"` placeholder string to the sanitized `args` list and pushes the actual `Tensor` object into `list_tensors`.
+  * **Sequential Transmission:** Transmits the JSON control message containing the function name and sanitized `args` via `_send_msg()`, followed by iterating through `list_tensors` to send each `Tensor` in order using `_send_tensor()`.
+
+* **Server Request Handling (`serve_request` Method):**
+  * **Payload Reconstruction:** The server receives the JSON metadata request, iterates through `args`, and whenever it encounters the `"TENSOR"` flag, it calls `self.recv_tensor()` to reconstruct the incoming tensor in its exact position.
+  * **Dispatch & Response Generation:** Passes the reconstructed argument list to `dispatch(function_name, arguments)` to run the function.
+  * **Return Serialization:** If the return payload contains tensors, the server applies the exact same serialization mechanism before sending the result package back to the client.
+
+* **Debugging the Dictionary Indexing Bug:**
+  * **The Error:** The client threw a cryptic TypeError stating that response indices must be integers, not strings (e.g., when trying to access `response["status"]`).
+  * **The Cause:** Spent 4 hours debugging the request pipeline before finding the root cause inside `serve_request()`: instead of transmitting the full response dictionary `_send_msg(response)`, I had accidentally passed `_send_msg(response["result"])`. This sent raw lists directly to the client instead of the metadata wrapper.
+  * **The Fix:** Using Strategic `print()` flag statements across the network pipeline helped isolate where the data structure mutated. Fixing `serve_request()` to pass the full `response` dictionary resolved the issue completely.
+
+* **Distributed Model Synchronization (`get_weights` & `send_grads`):**
+  * **`get_weights()`:** Allows worker nodes to query the server for current model parameters. The server iterates over its local layers and returns copies of its parameters.
+  * **`send_grads()`:** Allows workers to send the calculated parameter gradients back to the server for global optimization updates.
+  * **End-to-End Validation:** Configured the server node with a 2-hidden-layer `MLP` model and issued a `get_weights()` request from a worker node—the worker successfully received and reconstructed all network weights over the network!
