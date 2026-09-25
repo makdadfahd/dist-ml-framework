@@ -6,7 +6,7 @@ class RPCClient() :
     def __init__(self, socket) :
         self.conn = TensorConnection(socket)
 
-    def call(self, function_name, arguments) :
+    def call(self, function_name, arguments=[]) :
         #sending request
         new_arguments = []
         tensor_list = []
@@ -102,7 +102,7 @@ class RPCServer() :
                     response["result"][i] = "TENSOR"
                     tensors_list.append(tensor)
 
-            self.conn._send_msg(response["result"])
+            self.conn._send_msg(response)
 
             if len(tensors_list) > 0 :
                 for tensor in tensors_list:
@@ -131,4 +131,5 @@ class RPCServer() :
 
         self.optimizer.step()
         self.optimizer.zero_grad()
+        return "gradients pushed"
         
