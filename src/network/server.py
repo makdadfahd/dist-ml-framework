@@ -2,6 +2,8 @@ import socket
 from network.rpcserver import RPCServer
 from micrograd.neural_network import MLP
 from micrograd.optimizer import Adam
+from pytorch_comparaison.mymodel import Engine_Model
+import threading
 
 address = socket.gethostbyname(socket.gethostname())
 
@@ -13,7 +15,7 @@ serversocket.listen()
 #receive the client connection
 clientsocket , addr = serversocket.accept()
 
-model = MLP(3, [2,2,1])
+model = Engine_Model()
 params = [] 
 
 for param in model.parameters() :
@@ -23,5 +25,9 @@ optimizer = Adam(params)
 
 master = RPCServer(clientsocket, params, optimizer)
 
-while True :
-    master.handle_client()
+T1 = threading.Thread(target=master.handle_client)
+T1.start()
+T1.join()
+
+for param in model.parameters() :
+    print(param.grad)

@@ -60,7 +60,7 @@ class RPCServer() :
 
             try :
                 #after we made sure it exists we call it with arguments passed
-                result  = func(*args)
+                result  = func(*args) if function_name != "push_grads" else func(args)
                 response = {
                     'status' : True ,
                     'result' : result
@@ -127,7 +127,7 @@ class RPCServer() :
 
     def push_grads(self, gradients) :
         for i , gradient in enumerate(gradients) :
-            self.params[i].grad = gradient
+            self.params[i].grad = gradient.data
 
         self.optimizer.step()
         self.optimizer.zero_grad()
