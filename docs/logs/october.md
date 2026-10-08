@@ -23,3 +23,19 @@ After a brief break due to the start of the new university semester, I jumped ba
 * **Outcome:**
   * Successfully initialized model parameters remotely on worker nodes and transmitted computed parameter gradients back to the server.
 
+### 📌 October 8, 2026 — Refactoring RPC Argument Unpacking in `dispatch()` & Cleaning Up `push_grads` Invocation
+
+After stepping back and reflecting on the hardcoded `if` statement in `dispatch()`, I realized it was only a temporary, brittle fix. Hardcoding specific method names like `push_grads` would force me to update the conditional check every time a new method expecting a list argument was added to the framework.
+
+* **Refactoring `dispatch()`:**
+  * Removed the hardcoded `if function_name != "push_grads"` statement entirely from `rpcserver.py`.
+  * Restored the clean, universal `result = func(*args)` execution line in `dispatch()`.
+
+* **Elegant Client-Side Solution:**
+  * **The Root Cause:** When calling `self.call("push_grads", gradients)` where `gradients` is `[g1, g2, ...]`, `*args` unpacked `gradients` into individual positional arguments `g1 , g2 , ...`.
+  * **The Fix:** Wrapped `gradients` inside an outer list on the client side: `self.call("push_grads", [gradients])`.
+  * **How it Works:** When `*args` unpacks `[gradients]`, it extracts the outer list wrapper, correctly passing the single underlying `gradients` list as the sole positional argument to `push_grads(self, grads)`.
+
+* **Takeaway:**
+  * Solving the issue at the caller interface kept the core server dispatcher generic, clean, and extensible for future RPC methods without introducing hardcoded execution exceptions.
+
