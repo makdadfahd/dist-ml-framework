@@ -60,7 +60,7 @@ class RPCServer() :
 
             try :
                 #after we made sure it exists we call it with arguments passed
-                result  = func(*args) if function_name != "push_grads" else func(args)
+                result  = func(*args)
                 response = {
                     'status' : True ,
                     'result' : result
