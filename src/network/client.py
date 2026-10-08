@@ -42,6 +42,6 @@ gradients = []
 for param in parameters :
     gradients.append(Tensor(param.grad))
 
-message = worker.call("push_grads", gradients)
+message = worker.call("push_grads", [gradients])
 
 print(message)
