@@ -125,11 +125,12 @@ class RPCServer() :
             params.append(param)
         return params
 
-    def push_grads(self, gradients) :
+    def push_grads(self, *gradients) :
         for i , gradient in enumerate(gradients) :
             self.params[i].grad = gradient.data
-
+        
         self.optimizer.step()
+        
         self.optimizer.zero_grad()
         return "gradients pushed"
         
