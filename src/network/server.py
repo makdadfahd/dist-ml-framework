@@ -29,5 +29,3 @@ T1 = threading.Thread(target=master.handle_client)
 T1.start()
 T1.join()
 
-for param in model.parameters() :
-    print(param.grad)
