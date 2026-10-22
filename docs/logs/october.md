@@ -39,3 +39,23 @@ After stepping back and reflecting on the hardcoded `if` statement in `dispatch(
 * **Takeaway:**
   * Solving the issue at the caller interface kept the core server dispatcher generic, clean, and extensible for future RPC methods without introducing hardcoded execution exceptions.
 
+### 📌 October 19–22, 2026 — Distributed Training on MNIST, Gradient Bug Fix, & Making Epochs Faster
+
+After getting `get_weights` and `push_grads` working, I decided to test real training on the MNIST dataset using a master node and a worker node.
+
+* **First Distributed Test:**
+  * I loaded the dataset on the worker side. For every single batch, the worker called `get_weights`, ran forward and backward passes, and sent gradients back with `push_grads`.
+  * **The Problem:** It was super slow! Each epoch took **5 to 6 minutes** (instead of 3.84s locally), and accuracy was terrible—starting at **10.10%** and dropping to **8.64%** in epoch 2.
+
+* **Bug #1 — Stale Gradients Fix:**
+  * **The Bug:** I thought zeroing gradients on the server side would also zero them on the client side. But because they are separate objects over the network, the client kept accumulating old gradients. So when `.backward()` ran, the gradients were totally wrong.
+  * **The Fix:** I added `zero_grad()` directly on the client side before every batch.
+  * **The Result:** Accuracy jumped back to normal! It started at **90%** in epoch 1 and reached over **97%** by epoch 10, matching local training.
+
+* **Bug #2 — Network Speed Bottleneck:**
+  * Even though accuracy was good, epochs were still taking **6 to 10 minutes**. Calling `get_weights` and `push_grads` for every single batch (over 900+ calls per epoch) was choking the network connection.
+
+* **Optimization — Syncing Every 10 Batches:**
+  * **The Solution:** Instead of sending weights and gradients on every batch, I changed the code to sync only once every 10 batches.
+  * **The Result:** Time per epoch dropped down to just **9 to 12 seconds**!
+  * **Trade-off:** Accuracy dropped a bit—starting at **50%** in epoch 1 and reaching **93.69%** in epoch 10, because the worker used slightly old weights between syncs.
