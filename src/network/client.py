@@ -53,25 +53,31 @@ for epoch in range(epochs):
         idx = indices[i * batch_size : (i + 1) * batch_size]
         x_batch = Tensor(x_train[idx])
         y_batch = y_train[idx]
-        weights = worker.call("get_weights")
+
+        if i == 0 or (i+1) % 10 == 0 or i + 1 == 61 : 
+            weights = worker.call("get_weights")
         
-        for i , param in enumerate(parameters) :
-            param.data = weights[i].data
+            for index , param in enumerate(parameters) :
+                param.data = weights[index].data
         
         scores = localModel(x_batch)
+
         loss = cross_entropy_loss(y_batch, scores)
 
-        for param in parameters :
-            param.grad = np.zeros_like(param.data)
+        if i == 0 or (i+1) % 10 == 0 or i + 1 == 61 :
+
+            for param in parameters :
+                param.grad = np.zeros_like(param.data)
 
         loss.backward()
-        
-        gradients = []
 
-        for param in parameters :
-            gradients.append(Tensor(param.grad))
-        
-        message = worker.call("push_grads", gradients)
+        if (i+1) % 10 == 0 or i + 1 == 61 :
+            gradients = []
+
+            for param in parameters :
+                gradients.append(Tensor(param.grad))
+            
+            message = worker.call("push_grads", gradients)
             
         running_loss += loss.data   
 
