@@ -6,15 +6,26 @@ class TensorConnection :
     def __init__(self, socket):
         self.socket = socket
 
-    def send_tensor(self, tensor) :
-        tensor_info , tensor_data_bytes = self.tensor_info(tensor)
-        self._send_msg(tensor_info)
-        self.socket.sendall(tensor_data_bytes)
+    def send_tensor(self, tensors) :
+        infos = []
+        all_bytes = b""
+        tensor_list = tensors if isinstance(tensors, list) else [tensors]
+        for tensor in tensor_list :
+            tensor_info , tensor_data_bytes = self.tensor_info(tensor)
+            infos.append(tensor_info)
+            all_bytes += tensor_data_bytes
+        
+        self._send_msg(infos)
+        self.socket.sendall(all_bytes)
 
     def recv_tensor(self) :
-        tensor_info = self._recv_msg()
-        tensor = self.construct_tensor(tensor_info)
-        return tensor
+        infos = self._recv_msg()
+        tensors = []
+        for tensor_dict in infos :
+            tensor = self.construct_tensor(tensor_dict)
+            tensors.append(tensor)
+
+        return tensors
 
     def _recv_exact(self, n):
         full_msg = b''

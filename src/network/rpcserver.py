@@ -24,8 +24,8 @@ class RPCClient() :
         }
 
         self.conn._send_msg(request)
-        for tensor in tensor_list :
-            self.conn.send_tensor(tensor)
+        if tensor_list :
+            self.conn.send_tensor(tensor_list)
 
         #receiving response
         response = self.conn._recv_msg()
@@ -34,10 +34,16 @@ class RPCClient() :
         real_response = []
         #checking status 
         if status : 
+            result_list = response["result"]
+            tensor_count = result_list.count("TENSOR")
+            tensor_list = []
+            if tensor_count > 0 :
+                tensor_list = self.conn.recv_tensor()
+            j = 0    
             for i in range(len(response["result"])) :
                 if response["result"][i] == "TENSOR" :
-                    tensor = self.conn.recv_tensor()
-                    real_response.append(tensor)
+                    real_response.append(tensor_list[j])
+                    j += 1
                 else :
                     real_response.append(response["result"][i])
             return real_response
@@ -85,10 +91,18 @@ class RPCServer() :
         func = request["function_name"]
         args = request["args"]
         new_args = []
+        tensor_count = args.count("TENSOR")
+
+        tensors = []
+        j = 0
+
+        if tensor_count > 0 :
+            tensors = self.conn.recv_tensor()
+            
         for arg in args :
-            if arg == "TENSOR" :
-                tensor = self.conn.recv_tensor()
-                new_args.append(tensor)
+            if arg == "TENSOR"  :
+                new_args.append(tensors[j])
+                j += 1
             else :
                 new_args.append(arg)
 
@@ -105,8 +119,7 @@ class RPCServer() :
             self.conn._send_msg(response)
 
             if len(tensors_list) > 0 :
-                for tensor in tensors_list:
-                    self.conn.send_tensor(tensor)
+                self.conn.send_tensor(tensors_list)
         else :
             self.conn._send_msg(response)
 
