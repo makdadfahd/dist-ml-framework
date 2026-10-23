@@ -1,10 +1,13 @@
-import socket
+import socket, time
 from network.rpcserver import RPCClient
 from micrograd.multi_dim_engine import Tensor
 from micrograd.neural_network import MLP , cross_entropy_loss
 from torchvision import datasets
 from pytorch_comparaison.mymodel import Engine_Model
 import numpy as np
+from micrograd.optimizer import Adam
+
+
 
 address = socket.gethostbyname(socket.gethostname())
 
@@ -19,7 +22,6 @@ localModel = Engine_Model()
 
 
 parameters = localModel.parameters()
-
 
 
 #importing a single MNIST image 
@@ -43,6 +45,7 @@ acc_history = []
 
 #running the training
 for epoch in range(epochs):
+    start_time = time.perf_counter()
     indices = np.arange(num_samples)
     np.random.shuffle(indices)
     
@@ -54,34 +57,28 @@ for epoch in range(epochs):
         x_batch = Tensor(x_train[idx])
         y_batch = y_train[idx]
 
-        if i == 0 or (i+1) % 10 == 0 or i + 1 == 61 : 
-            weights = worker.call("get_weights")
-        
-            for index , param in enumerate(parameters) :
-                param.data = weights[index].data
+        weights = worker.call("get_weights")
+        for index , param in enumerate(parameters) :
+            param.data = weights[index].data
         
         scores = localModel(x_batch)
-
         loss = cross_entropy_loss(y_batch, scores)
 
-        if i == 0 or (i+1) % 10 == 0 or i + 1 == 61 :
-
-            for param in parameters :
-                param.grad = np.zeros_like(param.data)
+        for param in parameters :
+            param.grad = np.zeros_like(param.data)
 
         loss.backward()
 
-        if (i+1) % 10 == 0 or i + 1 == 61 :
-            gradients = []
+        gradients = []
 
-            for param in parameters :
-                gradients.append(Tensor(param.grad))
-            
-            message = worker.call("push_grads", gradients)
+        for param in parameters :
+            gradients.append(Tensor(param.grad))
+        
+        message = worker.call("push_grads", gradients)
             
         running_loss += loss.data   
 
-        
+    elapsed = time.perf_counter() - start_time    
 
     epoch_loss = running_loss / num_batches
     loss_history.append(epoch_loss)
@@ -91,6 +88,6 @@ for epoch in range(epochs):
     epoch_acc = np.mean(test_preds == y_test) * 100
     acc_history.append(epoch_acc)
 
-    print(f"Epoch {epoch+1}/{epochs} - Loss: {epoch_loss:.4f} | Acc: {epoch_acc:.2f}%")
+    print(f"Epoch {epoch+1}/{epochs} - Loss: {epoch_loss:.4f} | Acc: {epoch_acc:.2f}% | Time: {elapsed:.2f}s")
 
 
