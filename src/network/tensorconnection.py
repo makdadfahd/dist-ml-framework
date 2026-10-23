@@ -43,10 +43,11 @@ class TensorConnection :
         self.socket.sendall(json_data)
 
     def tensor_info(self, tensor) :
-        tensor_data_bytes = tensor.data.tobytes()
+        tensor_data_float16 = tensor.data.astype('float16')
+        tensor_data_bytes = tensor_data_float16.tobytes()
         tensor_data_length = len(tensor_data_bytes)
         tensor_dict = {
-            "dtype" : str(tensor.data.dtype),
+            "dtype" : str(tensor_data_float16.dtype),
             "shape" : tensor.data.shape,
             "length" : tensor_data_length
         }
@@ -56,6 +57,7 @@ class TensorConnection :
         tensor_length = tensor_dict["length"]
         tensor_data_bytes = self._recv_exact(tensor_length)
         tensor_data = np.frombuffer(tensor_data_bytes, dtype=tensor_dict["dtype"])
+        tensor_data = tensor_data.astype('float32')
         tensor = Tensor(tensor_data.reshape(tensor_dict["shape"]))
         return tensor
 

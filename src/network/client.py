@@ -13,6 +13,7 @@ address = socket.gethostbyname(socket.gethostname())
 
 #initialise the client socket and connect to the server
 clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+clientsocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 clientsocket.connect((address, 5050))
 
 worker = RPCClient(clientsocket)

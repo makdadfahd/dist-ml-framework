@@ -9,6 +9,8 @@ address = socket.gethostbyname(socket.gethostname())
 
 #intialise the server socket
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+serversocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
 serversocket.bind((address, 5050))
 serversocket.listen()
 
