@@ -59,3 +59,32 @@ After getting `get_weights` and `push_grads` working, I decided to test real tra
   * **The Solution:** Instead of sending weights and gradients on every batch, I changed the code to sync only once every 10 batches.
   * **The Result:** Time per epoch dropped down to just **9 to 12 seconds**!
   * **Trade-off:** Accuracy dropped a bit—starting at **50%** in epoch 1 and reaching **93.69%** in epoch 10, because the worker used slightly old weights between syncs.
+
+
+### 📌 October 23, 2026 — Solving Network Latency: Tensor Packing, FP16 Compression, & Disabling Nagle’s Algorithm (`TCP_NODELAY`)
+
+Today was a huge breakthrough day for the distributed system's training performance!
+
+* **Client-Side Optimizer Attempt:**
+  * Tried setting up a local Adam optimizer on the client side to boost accuracy while keeping the 10-batch sync stride.
+  * **Result:** Accuracy only went up by ~0.2% (reaching **93.88%**), so this wasn't enough to reach parity with local training.
+
+* **Returning to Per-Batch Syncing:**
+  * Switched back to calling `get_weights` and `push_grads` every batch to restore full accuracy (**97%+** by epoch 10).
+  * **The Goal:** Fix the massive **6 to 10 minute** per-epoch bottleneck while keeping per-batch weight synchronization intact.
+
+* **Optimization Attempt 1 — Bulk Tensor Packing:**
+  * Instead of sending tensors individually in a loop, I modified the pipeline to send tensors as massive unified blocks over the socket.
+  * **Result:** Epoch time dropped significantly from **6–10 minutes down to ~90 seconds**, while accuracy stayed high at **97%**.
+
+* **Optimization Attempt 2 — Precision Compression (FP32 $\rightarrow$ FP16):**
+  * Cast tensors from `float32` down to `float16` before sending over the network, then converted them back to `float32` upon receipt to cut the amount of data sent in half.
+  * **Result:** Time dropped slightly to **~85 seconds** per epoch, proving the amount of data sent wasn't the main bottleneck.
+
+* **The Game Changer — Disabling Nagle’s Algorithm (`TCP_NODELAY`):**
+  * **The Insight:** Realized the latency was caused by Nagle’s algorithm, which buffers small TCP packets by default to save network bandwidth. While good for web browsing, it introduces terrible latency for small, rapid RPC requests in real-time distributed learning.
+  * **The Fix:** Enabled low-latency transmission on the socket with a single line:
+    ```python
+    clientsocket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    ```
+  * **The Result:** Time per epoch dropped from **85s down to an average of just 8.14s**—a massive speedup while maintaining full **97%+** accuracy!
