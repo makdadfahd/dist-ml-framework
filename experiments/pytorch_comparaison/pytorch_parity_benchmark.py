@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import torch 
 from torchvision import datasets
 import random
+import gc 
+
 
 #loading the datasets
 train_dataset = datasets.MNIST(root='./data', train=True, download=True)
@@ -29,7 +31,7 @@ def set_seed(torch_params, my_params):
 
 
 #defining the seeds 
-seeds = [0 , 1 , 2 , 3, 4]
+seeds = [0 , 1 , 2 , 3, 4, 5, 6, 7, 8, 9]
 all_custom_losses = []
 all_pytorch_losses = []
 all_custom_acc = []
@@ -60,6 +62,11 @@ for seed in seeds :
     all_custom_acc.append(mymodel_history["acc"])
     all_pytorch_acc.append(pytorch_history["acc"])
 
+    #deleting garbage
+    del my_model
+    del pytorch_model
+    gc.collect()
+
 #getting the mean and std
 all_custom_losses = np.array(all_custom_losses)
 mean_custom_loss = all_custom_losses.mean(axis = 0)
@@ -86,7 +93,7 @@ ax1.plot(epochs, mean_custom_loss, label="Custom Adam")
 ax1.fill_between(epochs, mean_custom_loss - std_custom_loss, mean_custom_loss + std_custom_loss, alpha=0.2)
 ax1.plot(epochs, mean_pytorch_loss, label="PyTorch Adam")
 ax1.fill_between(epochs, mean_pytorch_loss - std_pytorch_loss, mean_pytorch_loss + std_pytorch_loss, alpha=0.2)
-ax1.set_title("Loss Trajectory (5 Seeds)")
+ax1.set_title("Loss Trajectory (10 Seeds)")
 ax1.set_xlabel("Epochs")
 ax1.set_ylabel("Loss")
 ax1.legend()
@@ -95,10 +102,10 @@ ax2.plot(epochs, mean_custom_acc, label="Custom Adam")
 ax2.fill_between(epochs, mean_custom_acc - std_custom_acc, mean_custom_acc + std_custom_acc, alpha=0.2)
 ax2.plot(epochs, mean_pytorch_acc, label="PyTorch Adam")
 ax2.fill_between(epochs, mean_pytorch_acc - std_pytorch_acc, mean_pytorch_acc + std_pytorch_acc, alpha=0.2)
-ax2.set_title("Test Accuracy (5 Seeds)")
+ax2.set_title("Test Accuracy (10 Seeds)")
 ax2.set_xlabel("Epochs")
 ax2.set_ylabel("Accuracy (%)")
 ax2.legend()
 
 plt.tight_layout()
-plt.savefig("comparison_5seeds.png")
+plt.savefig("custom_vspytroch_10seeds.png")
