@@ -182,7 +182,7 @@ With two workers, two coordination strategies were compared:
 - **Asynchronous**: each worker independently pulls weights, trains, and pushes gradients, with no coordination — whichever gradient arrives first gets applied first
 - **Synchronous**: the server waits for both workers' gradients each round, averages them, and applies one update, using `threading.Condition` to coordinate
 
-[Graph: loss/accuracy curves, sync vs async, both workers]
+![Sync vs Async Benchmark](sync_vs_async_benchmark.png)
 
 | Mode | Total Training Time (10 epochs) | Final Accuracy |
 |---|---|---|
