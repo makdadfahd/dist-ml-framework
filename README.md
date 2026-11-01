@@ -1,5 +1,7 @@
 # dist-ml-framework
 
+📄 **[Read the 4-Page IEEE Technical Report here](paper/Makdad_DeepLearning_DistributedRPC.pdf)**
+
 ## Part 1: The Autograd Engine
 
 A lightweight, $N$-dimensional tensor library and automatic differentiation engine built from scratch in Python and NumPy.
@@ -200,3 +202,9 @@ This matches a real, known tradeoff in distributed training research, not a bug 
 
 - **Serialization crash on tensor-containing responses**: `dispatch`'s response could itself contain a Tensor (e.g., `get_weights`), which isn't JSON-serializable — fixed by applying the same placeholder-and-separate-transmission pattern used for requests, symmetrically, to responses.
 - **Race condition in synchronous mode**: using `.append()` to collect two workers' gradients allowed a fast worker to "lap" a slow one still waiting to be rescheduled, corrupting the shared list's expected length. Fixed by switching to direct assignment per round instead of accumulating, so each round's data is always complete and unambiguous regardless of thread scheduling timing.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
