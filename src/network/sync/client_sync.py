@@ -1,5 +1,5 @@
 import socket, time
-from network.rpcserver import RPCClient
+from network.rpcserver_sync import RPCClient
 from micrograd.multi_dim_engine import Tensor
 from micrograd.neural_network import MLP , cross_entropy_loss
 from torchvision import datasets

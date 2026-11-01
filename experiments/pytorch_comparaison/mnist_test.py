@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch 
 from torchvision import datasets
-from multi_dim_engine import Tensor
+from micrograd.multi_dim_engine import Tensor
 
 #loading the datasets
 train_dataset = datasets.MNIST(root='./data', train=True, download=True)

@@ -52,12 +52,16 @@ class RPCClient() :
             raise RuntimeError(response["message"])
 
 class RPCServer() :   
-    def __init__(self, socket, params , optimzer ) :
+    def __init__(self, socket, params , optimzer, condition,counter, received_grads) :
         self.conn = TensorConnection(socket)
         self.functions = {"get_weights" : self.get_weights,
                           "push_grads" : self.push_grads}
         self.params = params
         self.optimizer = optimzer
+        self.received_grads = received_grads
+        self.counter = counter
+        self.condition = condition
+
 
     def dispatch(self, function_name , args = []) :
         try :
@@ -139,11 +143,24 @@ class RPCServer() :
         return params
 
     def push_grads(self, *gradients) :
-        for i , gradient in enumerate(gradients) :
-            self.params[i].grad = gradient.data
-        
-        self.optimizer.step()
-        
-        self.optimizer.zero_grad()
+        current_grads = list(gradients)
+        with self.condition :
+            self.counter[0] += 1   
+
+            if self.counter[0] < 2 :
+                self.received_grads = current_grads
+                self.condition.wait()
+
+            else :
+                for i in range(len(self.received_grads)) :
+                    self.params[i].grad = ((self.received_grads[i].data + current_grads[i].data) / 2)
+
+                self.optimizer.step()
+                self.optimizer.zero_grad()
+
+                self.counter[0] = 0
+                self.received_grads = []
+
+                self.condition.notify_all()
         return "gradients pushed"
         

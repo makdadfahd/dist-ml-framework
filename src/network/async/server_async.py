@@ -1,5 +1,5 @@
 import socket 
-from network.rpcserver import RPCServer
+from network.rpcserver_async import RPCServer
 from micrograd.neural_network import MLP
 from micrograd.optimizer import Adam
 from pytorch_comparaison.mymodel import Engine_Model
@@ -15,7 +15,6 @@ serversocket.bind((address, 5050))
 serversocket.listen()
 
 #receive the client connection
-clientsocket , addr = serversocket.accept()
 
 model = Engine_Model()
 params = [] 
@@ -25,9 +24,14 @@ for param in model.parameters() :
 
 optimizer = Adam(params)
 
-master = RPCServer(clientsocket, params, optimizer)
+client_counter = 0
 
-T1 = threading.Thread(target=master.handle_client)
-T1.start()
-T1.join()
+
+while True :
+    clientsocket , addr = serversocket.accept()
+    client_counter += 1
+    print(f"Connection received from a client {client_counter}")
+    master = RPCServer(clientsocket, params, optimizer)
+    T1 = threading.Thread(target=master.handle_client)
+    T1.start()
 
