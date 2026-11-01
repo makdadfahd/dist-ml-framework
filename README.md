@@ -188,7 +188,7 @@ With two workers, two coordination strategies were compared:
 
 | Mode | Total Training Time (10 epochs) | Final Accuracy |
 |---|---|---|
-| Asynchronous | 946.33 s | ~87.67% (avg of both workers) |
+| Asynchronous | 946.33 s | 87.67% (avg of both workers) |
 | Synchronous | 980.49 s | 96.96% (avg of both workers) |
 
 The result is not what naive intuition predicts. Asynchronous training is not meaningfully faster in wall-clock time here, and converges to noticeably lower accuracy. Likely causes:
@@ -205,6 +205,6 @@ This matches a real, known tradeoff in distributed training research, not a bug 
 
 ---
 
-## 📄 License
+## ⚖️ License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
