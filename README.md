@@ -1,5 +1,7 @@
 # dist-ml-framework
 
+## Part 1: The Autograd Engine
+
 A lightweight, $N$-dimensional tensor library and automatic differentiation engine built from scratch in Python and NumPy.
 
 Inspired by [micrograd](https://github.com/karpathy/micrograd), but scaled up from scalar values to vectorized tensor operations.
@@ -148,3 +150,53 @@ python experiments/compare_optimizers.py
 * **Vectorized Autograd:** Instead of tracking scalar floats one-by-one, we track $N$-dimensional arrays. Matrix multiplications use transpose rules, and batch broadcasting automatically sums gradients back down to match the original tensor shape.
 * **Fused Loss Trick:** Softmax and Cross-Entropy are merged into a single clean math step ($\frac{\partial L}{\partial z_i} = p_i - y_i$). We subtract the maximum value before exponentiating so numbers don't explode into `inf` or `NaN`.
 * **Adam Optimizer:** Maintains two running averages per parameter - a first moment (exponential moving average of the gradient) and a second (exponetial moving average of the squared gradient). Since both start at zero, early estimates are biased towards zero; we apply bias correction to compensate, dividing each moment by a factor that approaches 1 as training progresses. The final parameter update scales the gradient average by the inverse square root of the squared gradient average - this is what makes Adam "adaptive":parameteres with consistently large gradients get smaller effective steps, and vise-versa. 
+
+## Part 2: Distributed Training System
+
+### Architecture
+
+The distributed system follows a parameter server pattern:
+- **Server**: holds the master copy of model weights and the Adam optimizer
+- **Workers**: connect once, then repeatedly pull weights, train locally on a batch, and push gradients back
+
+All communication goes through a custom RPC layer built directly on raw TCP sockets — no gRPC, no pickle (pickle can execute arbitrary code on deserialization, a real security risk over a network). Tensors are serialized with their own lightweight protocol: a JSON header (dtype, shape, length) followed by raw bytes, with multiple tensors batched into a single transmission.
+
+![RPC_Architecture](RPC_server.png)
+
+### The Network Bottleneck
+
+The first working version synchronized on every batch and was correct, but slow: ~6 minutes per epoch, against 5.87s for local single-machine training. Three optimizations were applied in sequence:
+
+| Stage | Epoch Time |
+|---|---|
+| Per-batch sync (baseline) | ~6 min |
+| Batched tensor transmission | 90 s |
+| Float16 compression | 85 s |
+| TCP_NODELAY enabled | 8.14 s |
+
+**Batching** removed the overhead of a separate network round-trip per tensor. **Float16 compression** halved the data volume, a smaller gain since most overhead was already gone. **TCP_NODELAY** was the biggest fix: by default, TCP's Nagle's algorithm delays small packets to batch them for network efficiency — great for bulk transfer, bad for frequent small request/response cycles like ours. Disabling it removed that artificial delay.
+
+### Synchronous vs. Asynchronous Training
+
+With two workers, two coordination strategies were compared:
+- **Asynchronous**: each worker independently pulls weights, trains, and pushes gradients, with no coordination — whichever gradient arrives first gets applied first
+- **Synchronous**: the server waits for both workers' gradients each round, averages them, and applies one update, using `threading.Condition` to coordinate
+
+[Graph: loss/accuracy curves, sync vs async, both workers]
+
+| Mode | Total Training Time (10 epochs) | Final Accuracy |
+|---|---|---|
+| Asynchronous | 946.33 s | ~87.67% (avg of both workers) |
+| Synchronous | 980.49 s | 96.96% (avg of both workers) |
+
+The result is not what naive intuition predicts. Asynchronous training is not meaningfully faster in wall-clock time here, and converges to noticeably lower accuracy. Likely causes:
+- **Gradient staleness**: with two workers continuously pushing without coordination, gradients are frequently applied against weights that have already moved
+- **Contention without true parallelism**: Python's GIL means two threads competing for the same server resources don't run truly concurrently, eroding async's theoretical speed advantage
+- **Synchronous averaging acts like a larger effective batch**, which is more stable despite the wait
+
+This matches a real, known tradeoff in distributed training research, not a bug in the implementation — it confirms that synchronization frequency and staleness meaningfully affect convergence, exactly the kind of result this experiment was designed to surface.
+
+### Known Bugs Encountered
+
+- **Serialization crash on tensor-containing responses**: `dispatch`'s response could itself contain a Tensor (e.g., `get_weights`), which isn't JSON-serializable — fixed by applying the same placeholder-and-separate-transmission pattern used for requests, symmetrically, to responses.
+- **Race condition in synchronous mode**: using `.append()` to collect two workers' gradients allowed a fast worker to "lap" a slow one still waiting to be rescheduled, corrupting the shared list's expected length. Fixed by switching to direct assignment per round instead of accumulating, so each round's data is always complete and unambiguous regardless of thread scheduling timing.
