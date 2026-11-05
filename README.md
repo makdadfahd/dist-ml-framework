@@ -1,6 +1,6 @@
 # dist-ml-framework
 
-📄 **[Read the 4-Page IEEE Technical Report here](paper/Makdad_DeepLearning_DistributedRPC.pdf)**
+📄 **[Read the 5-Page IEEE Technical Report here](paper/Makdad_DeepLearning_DistributedRPC.pdf)**
 
 ## Part 1: The Autograd Engine
 
@@ -58,36 +58,36 @@ To validate correctness, the custom engine was benchmarked directly against PyTo
 
 Loss trajectory and test accuracy over 10 epochs, custom engine vs PyTorch :
 
-![Loss and Accuracy Comparison](comparison_5seeds.png)
+![Loss and Accuracy Comparison](custom_vspytorch_10seeds.png)
 
-Across 5 independent seeds, loss trajectories remain nearly indistinguishable throughout training, and final test accuracy is statistically comparable between implementations.
+Across 10 independent seeds, loss trajectories remain nearly indistinguishable throughout training, and final test accuracy is statistically comparable between implementations.
 
-### Statistical Summary (5 Seeds)
+### Statistical Summary (10 Seeds)
 
 | Seed | Custom Final Acc (%) | PyTorch Final Acc (%) | Custom Final Loss | PyTorch Final Loss |
-|------|----------------------|------------------------|--------------------|----------------------|
-| 0    | 97.33                | 97.47                  | 0.0280             | 0.0286               |
-| 1    | 97.89                | 97.88                  | 0.0261             | 0.0309               |
-| 2    | 97.68                | 97.42                  | 0.0270             | 0.0295               |
-| 3    | 97.50                | 97.29                  | 0.0284             | 0.0290               |
-| 4    | 97.91                | 97.41                  | 0.0275             | 0.0289               |
-| **Mean ± Std** | **97.66% ± 0.22%** | **97.49% ± 0.20%** | **0.0274 ± 0.0008** | **0.0294 ± 0.0008** |
+|------|----------------------|-----------------------|-------------------|--------------------|
+| 0    | 97.55                | 97.47                 | 0.0272            | 0.0286             |
+| 1    | 97.59                | 97.88                 | 0.0264            | 0.0309             |
+| 2    | 97.62                | 97.42                 | 0.0301            | 0.0295             |
+| 3    | 97.63                | 97.29                 | 0.0275            | 0.0290             |
+| 4    | 97.46                | 97.41                 | 0.0283            | 0.0289             |
+| 5    | 97.41                | 97.73                 | 0.0261            | 0.0319             |
+| 6    | 97.86                | 97.54                 | 0.0287            | 0.0282             |
+| 7    | 97.82                | 96.95                 | 0.0260            | 0.0322             |
+| 8    | 97.65                | 97.74                 | 0.0292            | 0.0291             |
+| 9    | 97.62                | 97.09                 | 0.0285            | 0.0307             |
+| **Mean ± Std** | **97.62% ± 0.13%** | **97.45% ± 0.28%** | **0.0278 ± 0.0014** | **0.0299 ± 0.0014** |
 
-Across 5 seeds, the custom engine's mean accuracy is marginally higher than
-PyTorch's, with overlapping standard deviations — indicating the two
-implementations are statistically equivalent, not meaningfully different.
+Across 10 seeds, the custom engine's mean accuracy is marginally higher than PyTorch's, with overlapping standard deviations — indicating the two implementations are statistically equivalent, not meaningfully different.
 
 ### Performance
 
 | | Custom Engine | PyTorch |
 |---|---|---|
-| Avg. time/epoch | 3.84s | 1.64s |
-| Avg. total training time (10 epochs) | 38.36s | 16.38s |
+| Avg. time/epoch | 5.87s | 2.28s |
+| Avg. total training time (10 epochs) | 58.7s | 22.8s |
 
-PyTorch is roughly 2.3x faster, due to its optimized C++/CUDA backend; this
-implementation prioritizes correctness, transparency, and educational clarity
-(every operation implemented and readable in pure Python/NumPy) over raw
-performance.
+PyTorch is roughly 2.5x faster, due to its optimized C++/CUDA backend; this implementation prioritizes correctness, transparency, and educational clarity (every operation implemented and readable in pure Python/NumPy) over raw performance.
 
 ### Reproduce
 
