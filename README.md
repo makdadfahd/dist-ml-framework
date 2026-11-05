@@ -1,6 +1,6 @@
 # dist-ml-framework
 
-📄 **[Read the 5-Page IEEE Technical Report here](paper/Makdad_DeepLearning_DistributedRPC.pdf)**
+📄 **[Read the 5-Page IEEE Technical Report here](paper/Makdad_DeepLearning_DistributedEngine.pdf)**
 
 ## Part 1: The Autograd Engine
 
@@ -58,7 +58,7 @@ To validate correctness, the custom engine was benchmarked directly against PyTo
 
 Loss trajectory and test accuracy over 10 epochs, custom engine vs PyTorch :
 
-![Loss and Accuracy Comparison](custom_vspytorch_10seeds.png)
+![Loss and Accuracy Comparison](custom_vspytroch_10seeds.png)
 
 Across 10 independent seeds, loss trajectories remain nearly indistinguishable throughout training, and final test accuracy is statistically comparable between implementations.
 
