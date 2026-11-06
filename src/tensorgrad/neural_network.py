@@ -1,5 +1,5 @@
-from micrograd.multi_dim_engine import Tensor
-from micrograd.optimizer import Adam
+from tensorgrad.multi_dim_engine import Tensor
+from tensorgrad.optimizer import Adam
 import numpy as np
 
 def cross_entropy_loss(index_vector,scores) :

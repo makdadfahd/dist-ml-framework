@@ -24,7 +24,7 @@ pip install numpy matplotlib torchvision
 
 ```python
 import numpy as np
-from micrograd.multi_dim_engine import Tensor
+from tensorgrad.multi_dim_engine import Tensor
 
 # Define tensors with gradient tracking
 a = Tensor(np.array([[1.0, 2.0], [3.0, 4.0]]))
@@ -78,7 +78,7 @@ Across 10 independent seeds, loss trajectories remain nearly indistinguishable t
 | 9    | 97.62                | 97.09                 | 0.0285            | 0.0307             |
 | **Mean ± Std** | **97.62% ± 0.13%** | **97.45% ± 0.28%** | **0.0278 ± 0.0014** | **0.0299 ± 0.0014** |
 
-Across 10 seeds, the custom engine's mean accuracy is marginally higher than PyTorch's, with overlapping standard deviations — indicating the two implementations are statistically equivalent, not meaningfully different.
+Across 10 seeds, the custom engine's mean accuracy is marginally higher than PyTorch's, with overlapping standard deviations — indicating the two implementations achieved comparable test accuracy across the evaluated random seeds.
 
 ### Performance
 
