@@ -1,5 +1,5 @@
 import socket , struct , json
-from network.tensorconnection import TensorConnection
+from network.core.tensorconnection import TensorConnection
 from tensorgrad.multi_dim_engine import Tensor
 
 class RPCClient() :

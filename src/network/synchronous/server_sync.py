@@ -1,5 +1,5 @@
 import socket 
-from network.rpcserver_async import RPCServer
+from network.synchronous.rpcserver_sync import RPCServer
 from tensorgrad.neural_network import MLP
 from tensorgrad.optimizer import Adam
 from pytorch_comparaison.mymodel import Engine_Model
@@ -16,6 +16,7 @@ serversocket.listen()
 
 #receive the client connection
 
+
 model = Engine_Model()
 params = [] 
 
@@ -24,14 +25,17 @@ for param in model.parameters() :
 
 optimizer = Adam(params)
 
-client_counter = 0
+counter = [0]
+received_grads = []
+lock = threading.Lock()
+condition = threading.Condition(lock)
+event = threading.Event()
 
 
 while True :
     clientsocket , addr = serversocket.accept()
-    client_counter += 1
-    print(f"Connection received from a client {client_counter}")
-    master = RPCServer(clientsocket, params, optimizer)
+    print("Connection received from a client")
+    master = RPCServer(clientsocket, params, optimizer, condition, counter, received_grads)
     T1 = threading.Thread(target=master.handle_client)
     T1.start()
 

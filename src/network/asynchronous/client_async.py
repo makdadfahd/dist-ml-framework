@@ -1,5 +1,5 @@
 import socket, time
-from network.rpcserver_async import RPCClient
+from network.asynchronous.rpcserver_async import RPCClient
 from tensorgrad.multi_dim_engine import Tensor
 from tensorgrad.neural_network import MLP , cross_entropy_loss
 from torchvision import datasets
