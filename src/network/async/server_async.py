@@ -1,7 +1,7 @@
 import socket 
 from network.rpcserver_async import RPCServer
-from micrograd.neural_network import MLP
-from micrograd.optimizer import Adam
+from tensorgrad.neural_network import MLP
+from tensorgrad.optimizer import Adam
 from pytorch_comparaison.mymodel import Engine_Model
 import threading
 

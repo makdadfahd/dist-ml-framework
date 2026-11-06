@@ -1,6 +1,6 @@
 import socket, json, struct
 import numpy as np
-from micrograd.multi_dim_engine import Tensor
+from tensorgrad.multi_dim_engine import Tensor
 
 class TensorConnection :
     def __init__(self, socket):

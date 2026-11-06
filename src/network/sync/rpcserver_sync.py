@@ -1,6 +1,6 @@
 import socket , struct , json
 from network.tensorconnection import TensorConnection
-from micrograd.multi_dim_engine import Tensor
+from tensorgrad.multi_dim_engine import Tensor
 
 class RPCClient() :
     def __init__(self, socket) :

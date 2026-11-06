@@ -1,11 +1,11 @@
 import socket, time
 from network.rpcserver_async import RPCClient
-from micrograd.multi_dim_engine import Tensor
-from micrograd.neural_network import MLP , cross_entropy_loss
+from tensorgrad.multi_dim_engine import Tensor
+from tensorgrad.neural_network import MLP , cross_entropy_loss
 from torchvision import datasets
 from pytorch_comparaison.mymodel import Engine_Model
 import numpy as np
-from micrograd.optimizer import Adam
+from tensorgrad.optimizer import Adam
 
 
 

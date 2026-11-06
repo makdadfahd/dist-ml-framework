@@ -1,6 +1,6 @@
-from micrograd.multi_dim_engine import Tensor
-from micrograd.neural_network import MLP, cross_entropy_loss
-from micrograd.optimizer import Adam , SGD ,SGDM , RMSProp
+from tensorgrad.multi_dim_engine import Tensor
+from tensorgrad.neural_network import MLP, cross_entropy_loss
+from tensorgrad.optimizer import Adam , SGD ,SGDM , RMSProp
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
